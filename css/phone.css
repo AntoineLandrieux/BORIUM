@@ -1,4 +1,17 @@
-@media screen and (max-width:600px) {
+@media screen and (max-width:700px) {
+  
+  body {
+    background-size: auto auto;
+  }
+  
+  section.whatisit {
+    background-size: auto auto;
+  }
+  
+  section.download {
+    background-size: auto auto;
+  }
+  
   nav {
     width: 100vw;
     height: 40vh;

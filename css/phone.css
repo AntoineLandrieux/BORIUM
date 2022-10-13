@@ -1,0 +1,18 @@
+@media screen and (max-width:600px) {
+  nav {
+    width: 100vw;
+    height: 40vh;
+  }
+  
+  nav.disable {
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: all .5s ease-in-out;
+  }
+  
+  nav.enable {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all .5s ease-in-out;
+  }
+}

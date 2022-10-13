@@ -14,6 +14,7 @@ body {
     background-image: url('../resource/background-main.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-size: 100% 100%;
 }
 
 nav {
@@ -112,12 +113,14 @@ section.whatisit {
     background-image: url('../resource/background-info.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-size: 100% 100%;
 }
 
 section.download {
     background-image: url('../resource/background-download.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
+    background-size: 100% 100%;
 }
 
 section.ref {

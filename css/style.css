@@ -122,6 +122,8 @@ section.download {
 
 section.ref {
     height: 10vh;
+    background: #fff;
+    color: #000;
 }
 
 img {

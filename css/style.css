@@ -155,6 +155,10 @@ h1.title:hover::after {
     transition: .3s all ease-in-out;
 }
 
+input {
+    color: #000;
+}
+
 hr {
     width: 100%;
     height: 3px;

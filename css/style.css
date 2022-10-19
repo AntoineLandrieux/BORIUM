@@ -108,8 +108,13 @@ section {
     text-align: center;
 }
 
+section li {
+    align-items: left;
+    text-align: left;
+}
+
 section.whatisit {
-    height: 80vh;
+    height: 120vh;
     background-image: url('../resource/background-info.png');
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -153,15 +158,6 @@ h1.title::after {
 h1.title:hover::after {
     transform: scale(1);
     transition: .3s all ease-in-out;
-}
-
-input {
-    color: #000;
-}
-
-hr {
-    width: 50%;
-    height: 3px;
 }
 
 p {

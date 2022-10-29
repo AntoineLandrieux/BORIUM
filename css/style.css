@@ -217,6 +217,15 @@ p {
     animation-duration: 1s;
 }
 
+@keyframes circle {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @keyframes spawn {
     from {
         opacity: 0;

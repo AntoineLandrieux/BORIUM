@@ -17,7 +17,7 @@ btn.addEventListener('click', function (f) {
 });
 
 window.addEventListener('scroll', function (f) {
-    if (window.scrollY > 200)
+    if (window.scrollY > 1)
     {
         logo.style.transform = `translate(0, ${window.scrollY/2}px)`;
     }

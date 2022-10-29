@@ -17,6 +17,58 @@ body {
     background-size: 100% 100%;
 }
 
+div#loader {
+    position: fixed;
+    z-index: 99;
+    height: 50vh;
+    width: 50vh;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #101010;
+    transform: translate(-50%, -50%);
+}
+
+div.sous {
+    position: fixed;
+    z-index: 9998;
+    height: 50vh;
+    width: 50vh;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #2d2d2d;
+}
+
+.sous#a {
+    z-index: 9997;
+    transform: translate(-52%, -52%);
+}
+
+.sous#b {
+    z-index: 9996;
+    transform: translate(-48%, -48%);
+}
+
+div#loader div#circle {
+    position: fixed;
+    z-index: 999;
+    height: 40vh;
+    width: 40vh;
+    border-top: 10px solid darkred;
+    border-radius: 50%;
+    background-color: #101010;
+    animation: circle 1s infinite ease-in-out;
+}
+
 nav {
     z-index: 999;
     height: 100vh;

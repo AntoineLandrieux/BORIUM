@@ -19,7 +19,7 @@ body {
 
 div#loader {
     position: fixed;
-    z-index: 99;
+    z-index: 99999;
     height: 50vh;
     width: 50vh;
     top: 50%;
@@ -60,7 +60,7 @@ div.sous {
 
 div#loader div#circle {
     position: fixed;
-    z-index: 999999;
+    z-index: 9999999;
     height: 40vh;
     width: 40vh;
     border-top: 10px solid darkred;

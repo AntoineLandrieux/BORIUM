@@ -1,0 +1,317 @@
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    font-size: 20px;
+    font-family: sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background-image: url('../resource/website/background-main.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+div#loader {
+    position: fixed;
+    z-index: 99999;
+    height: 50vh;
+    width: 50vh;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #101010;
+    transform: translate(-50%, -50%);
+}
+
+div.sous {
+    position: fixed;
+    z-index: 9998;
+    height: 50vh;
+    width: 50vh;
+    top: 50%;
+    left: 50%;
+    display: flex;
+    border-radius: 10px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #2d2d2d;
+}
+
+div#loader div#circle {
+    position: fixed;
+    z-index: 9999999;
+    height: 40vh;
+    width: 40vh;
+    border-top: 10px solid darkred;
+    border-radius: 50%;
+    background-color: #101010;
+    animation: circle 1s infinite ease-in-out;
+}
+
+nav {
+    z-index: 999;
+    height: 100vh;
+    width: 60vw;
+    position: fixed;
+    background: #000000b4;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 10px;
+}
+
+nav.enable {
+    opacity: 1;
+    transform: translateX(0);
+    transition: .5s all ease-in-out;
+}
+
+nav.disable {
+    opacity: 0;
+    transform: translateX(-100%);
+    transition: .5s all ease-in-out;
+}
+
+nav a {
+    margin-bottom: 10px;
+    text-decoration: none;
+}
+
+nav a::after {
+    content: "";
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: #fff;
+    transform: scale(0);
+}
+
+nav a:hover::after {
+    transform: scale(1);
+    transition: .3s all ease-in-out;
+}
+
+button {
+    z-index: 9999;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    outline: none;
+    border: 1px solid #fff;
+    background: #000;
+    height: 50px;
+    width: 50px;
+    position: fixed;
+    font-size: 50px;
+    border-radius: 50%;
+}
+
+button:active {
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
+    transition: .2s all ease-in-out;
+}
+
+button.enable {
+    transform: rotate(-45deg);
+    transition: .5s all ease-in-out;
+}
+
+button.disable {
+    transform: rotate(0);
+    transition: .5s all ease-in-out;
+}
+
+section {
+    overflow: hidden;
+    height: 80vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+section.whatisit {
+    background-image: url('../resource/website/background-info.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+section.news {
+    height: 90vh;
+    background-image: url('../resource/website/background-news.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+section.download {
+    height: 70vh;
+    background-image: url('../resource/website/background-download.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+section.ref {
+    height: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: #000;
+}
+
+h1.title {
+    margin: 25px;
+    font-size: 50px;
+    cursor: pointer;
+    animation-name: spawn;
+    animation-duration: 1s;
+}
+
+h1.title::after {
+    content: "";
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: #fff;
+    transform: scale(0);
+}
+
+h1.title:hover::after {
+    transform: scale(1);
+    transition: .3s all ease-in-out;
+}
+
+img.title {
+    animation-name: spawn;
+    animation-duration: 1s;
+    transform: scale(1);
+    transition: 0.5s all ease-in-out;
+}
+
+img.title:hover {
+    transform: scale(1.25);
+    transition: 0.2s all ease-in-out;
+}
+
+.slider {
+    max-width: 500px;
+    height: 300px;
+    border-radius: 10px;
+    z-index: inherit;
+    overflow: hidden;
+}
+
+.slides {
+    width: 1500px;
+    animation: slide 10s infinite alternate;
+}
+
+.slide {
+    float: left;
+}
+
+div.container {
+    display: flex;
+    max-width: 90vw;
+    border-radius: 10px;
+    background-image: url('../resource/website/background-stone.png');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: 100% 100%;
+}
+
+div.container .message {
+    margin: 10px;
+    text-align: left;
+    display: flex;
+    float: left;
+    flex-direction: column;
+    justify-content: center;
+}
+
+div.container .message p {
+    font-size: 25px;
+}
+
+a.network {
+    margin: 5px;
+}
+
+p {
+    animation-name: spawnTo;
+    animation-duration: 1s;
+}
+
+@keyframes circle {
+    from {
+        transform: rotate(0);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spawn {
+    from {
+        transform: scale(100);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes spawnTo {
+    from {
+        transform: translateY(-200%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide {
+    0% {
+        transform: translateX(0);
+    }
+    20% {
+        transform: translateX(0);
+    }
+    40% {
+        transform: translateX(-500px);
+    }
+    60% {
+        transform: translateX(-500px);
+    }
+    80% {
+        transform: translateX(-1000px);
+    }
+    100% {
+        transform: translateX(-1000px);
+    }
+}

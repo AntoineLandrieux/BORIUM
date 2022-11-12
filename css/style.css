@@ -175,7 +175,7 @@ section.download {
 }
 
 section.ref {
-    height: 20vh;
+    height: 25vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -255,6 +255,10 @@ div.container .message {
 
 div.container .message p {
     font-size: 25px;
+}
+
+div.network-link {
+    margin-top: 10px;
 }
 
 a.network {

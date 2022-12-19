@@ -1,3 +1,10 @@
+@media screen and (min-width:700px) {
+  button,
+  nav#slide {
+    visibility: hidden;
+  }
+}
+
 @media screen and (max-width:700px) {
   
   body {
@@ -12,21 +19,30 @@
     background-size: auto auto;
   }
   
-  nav {
+  nav#slide {
     width: 100vw;
     height: 60vh;
   }
   
-  nav.disable {
+  nav#slide.disable {
     opacity: 0;
     transform: translateY(-100%);
     transition: all .5s ease-in-out;
   }
   
-  nav.enable {
+  nav#slide.enable {
     opacity: 1;
     transform: translateY(0);
     transition: all .5s ease-in-out;
+  }
+  
+  button,
+  nav#slide {
+    visibility: visible;
+  }
+
+  nav.menu {
+    visibility: hidden;
   }
 
   section.news {

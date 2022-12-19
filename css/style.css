@@ -59,7 +59,7 @@ div#loader div#circle {
     animation: circle 1s infinite ease-in-out;
 }
 
-nav {
+nav#slide {
     z-index: 999;
     height: 100vh;
     width: 60vw;
@@ -73,24 +73,24 @@ nav {
     border-radius: 10px;
 }
 
-nav.enable {
+nav#slide.enable {
     opacity: 1;
     transform: translateX(0);
     transition: .5s all ease-in-out;
 }
 
-nav.disable {
+nav#slide.disable {
     opacity: 0;
     transform: translateX(-100%);
     transition: .5s all ease-in-out;
 }
 
-nav a {
+nav#slide a {
     margin-bottom: 10px;
     text-decoration: none;
 }
 
-nav a::after {
+nav#slide a::after {
     content: "";
     display: block;
     height: 3px;
@@ -99,15 +99,15 @@ nav a::after {
     transform: scale(0);
 }
 
-nav a:hover::after {
+nav#slide a:hover::after {
     transform: scale(1);
     transition: .3s all ease-in-out;
 }
 
 button {
     z-index: 9999;
-    top: 20px;
-    left: 20px;
+    top: 50px;
+    left: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -140,9 +140,72 @@ button.disable {
     transition: .5s all ease-in-out;
 }
 
+a {
+    font-weight: bold;
+    cursor: pointer;
+    padding: 10px 0;
+    color: #fff;
+    text-decoration: none;
+}
+
+nav.menu {
+    z-index: 998;
+    position: fixed;
+    width: 100vw;
+}
+
+nav.menu ul li {
+    list-style-type: none;
+    width: 33.333333333333%;
+    min-height: 27px;
+    max-height: 27px;
+    text-align: center;
+    float: left;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background: #272727;
+}
+
+nav.menu ul li ul {
+    width: 100%;
+    z-index: 9999;
+    position: absolute;
+    background: #fff;
+}
+
+nav.menu ul li ul li {
+    display: none;
+    width: 100%;
+    text-align: center;
+    padding-top: 20px;
+}
+
+nav.menu ul li ul li a,
+nav.menu ul li,
+nav.menu ul li a {
+    color: #fff;
+}
+  
+nav.menu ul li:hover ul li {
+    display: block;
+}
+  
+nav.menu ul li.btn ul li:hover a {
+    color: #fff;
+}
+
+nav.menu ul li.btn:hover a,
+nav.menu ul li.btn:hover {
+    color: #9c9c9c;
+}
+
 section {
     overflow: hidden;
-    height: 80vh;
+    height: 90vh;
     width: 100%;
     display: flex;
     flex-direction: column;

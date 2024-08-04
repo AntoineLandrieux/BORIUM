@@ -1,0 +1,5 @@
+NOTE FOR LATER
+
+[ ] Create a multi-user system
+[ ] Make the shell functional
+    - Based on LDRX interpreter ?

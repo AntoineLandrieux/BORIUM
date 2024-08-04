@@ -1,0 +1,9 @@
+# IDE
+
+.vscode/
+.idea/
+
+# TMP
+
+tmp/
+bin/

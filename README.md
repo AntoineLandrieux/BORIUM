@@ -3,7 +3,7 @@
 
 ## Simple Operating System
 
-LDRX is distributed under the [MIT LICENSE](LICENSE).
+BORIUM is distributed under the [MIT LICENSE](LICENSE).
 
 ![image](resources/github/image.png)
 
@@ -11,7 +11,7 @@ LDRX is distributed under the [MIT LICENSE](LICENSE).
 
 ## Documentation
 
-See **[LDRX Documentation](doc/documentation.md)**
+See **[BORIUM Documentation](doc/documentation.md)**
 
 ## Contributing
 

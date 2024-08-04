@@ -3,6 +3,6 @@
 
 ---
 
-- About **[BORIUM](borium)**
+- About **[BORIUM](borium.md)**
 
-- About **[SHELL](shell)**
+- About **[SHELL](shell.md)**

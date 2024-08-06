@@ -15,7 +15,7 @@
 #define SCREEN_HEIGHT 25
 #define SCREEN_WIDTH 80
 
-#define SCREEN (SCREEN_HEIGHT * SCREEN_WIDTH * 2)
+#define SCREEN (SCREEN_HEIGHT * SCREEN_WIDTH)
 
 #define TAB_SIZE 4
 
@@ -54,12 +54,20 @@ void PUTC(const char _Char);
 void PUTS(const char *_String);
 
 /**
- * @brief Move cursor
+ * @brief Move cursor left
  * @author Antoine LANDRIEUX
  * 
  * @param _Move
  */
 void CURSOR_MOVE_LEFT(unsigned int _Move);
+
+/**
+ * @brief Move cursor right
+ * @author Antoine LANDRIEUX
+ * 
+ * @param _Move
+ */
+void CURSOR_MOVE_RIGHT(unsigned int _Move);
 
 /**
  * @brief Screen scroll
@@ -74,6 +82,13 @@ void SCREEN_SCROLL();
  * @param _Color 1 byte (4 bits Background - 4 bits Foreground)
  */
 void SCREEN_COLOR(const unsigned char _Color);
+
+/**
+ * @brief Clear screen
+ * @author Antoine LANDRIEUX
+ * 
+ */
+void SCREEN_CLEAR();
 
 /**
  * @brief Initialize screen

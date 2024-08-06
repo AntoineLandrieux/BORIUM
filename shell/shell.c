@@ -3,6 +3,8 @@
 
 #include "../kernel/kernel.h"
 
+#include "shell.h"
+
 #include <types.h>
 
 /*
@@ -23,25 +25,29 @@ boolean strcmp(char *_Dest, const char *_Source, uint64 _Size)
 }
 
 // TODO: See notes.txt
-void ParseShellCode(char *_Code)
+void ParseShell(char *_Code)
 {
+    if (!*_Code)
+        return;
+
     if (strcmp(_Code, "help", 4))
     {
-        PUTS("help     : show all commands\n");
-        PUTS("echo     : print message\n");
-        PUTS("reload   : reset your computer\n");
-        PUTS("license  : show license\n");
-        PUTS("shutdown : turn off your computer");
+        PUTS("help  : show all commands | reload   : reset your computer\n");
+        PUTS("echo  : print message     | license  : show license\n");
+        PUTS("clear : clear screen      | shutdown : turn off your computer\n");
     }
 
     else if (strcmp(_Code, "echo", 4))
         for (uint8 i = 5; _Code[i]; i++)
             PUTC(_Code[i]);
 
+    else if (strcmp(_Code, "clear", 5))
+        SCREEN_CLEAR();
+
     else if (strcmp(_Code, "reload", 6))
         return start();
 
-    else if (strcmp(_Code, "license", 6))
+    else if (strcmp(_Code, "license", 7))
         PUTS("Antoine LANDRIEUX (MIT license)");
 
     else if (strcmp(_Code, "shutdown", 8))
@@ -49,8 +55,8 @@ void ParseShellCode(char *_Code)
 
     else
     {
-        CPUTS("Unknown command:\nAt: ", 0xC),
-            CPUTS(_Code, 0xC);
+        CPUTS("Unknown command:\nAt: ", 0xC);
+        CPUTS(_Code, 0xC);
     }
 }
 
@@ -58,19 +64,19 @@ void shell()
 {
     while (_Running)
     {
-        char code[20] = {
-            0, 0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 0, 0
+        char code[25] = {
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0
         };
 
-        PUTS("\n Borium@");
+        PUTS("\nBorium@");
         PUTS(_User);
         PUTS("$ ");
+
         GETS(code, sizeof(code));
-        ParseShellCode(code);
-        PUTC('\n');
+        ParseShell(code);
     }
 }

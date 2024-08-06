@@ -10,6 +10,12 @@
  * MIT License
 */
 
+struct TOKENS
+{
+    char _Value[25];
+    struct TOKENS *_Next;
+};
+
 /**
  * @brief Initialize shell
  * @author Antoine LANDRIEUX

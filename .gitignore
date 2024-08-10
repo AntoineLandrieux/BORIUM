@@ -7,3 +7,11 @@
 
 tmp/
 bin/
+isodir/
+
+# BIN
+
+*.iso
+*.bin
+*.img
+*.o

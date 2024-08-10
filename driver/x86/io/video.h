@@ -76,25 +76,10 @@ void CURSOR_MOVE_RIGHT(unsigned int _Move);
 void SCREEN_SCROLL();
 
 /**
- * @brief Initialize screen color
- * @author Antoine LANDRIEUX
- * 
- * @param _Color 1 byte (4 bits Background - 4 bits Foreground)
- */
-void SCREEN_COLOR(const unsigned char _Color);
-
-/**
  * @brief Clear screen
  * @author Antoine LANDRIEUX
  * 
  */
 void SCREEN_CLEAR();
-
-/**
- * @brief Initialize screen
- * @author Antoine LANDRIEUX
- * 
- */
-void SCREEN_INIT();
 
 #endif /* __VIDEO_H__ */

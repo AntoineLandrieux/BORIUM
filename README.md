@@ -1,5 +1,5 @@
 
-# BORIUM (БОРИЙ)
+# BORIUM
 
 ## Simple Operating System
 

@@ -14,7 +14,7 @@
 #define BORIUM_KERNEL_MINOR 0
 #define BORIUM_KERNEL_PATCH 0
 
-extern char _User[20];
+extern char *_User;
 extern unsigned char _Running;
 
 /**

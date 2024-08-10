@@ -15,13 +15,8 @@
  * MIT License
 */
 
-char _User[20] = {0};
+char *_User;
 unsigned char _Running = False;
-
-#define THEME_DEFAULT 0x0F
-#define THEME_LIGHT 0xF3
-#define THEME_GIRLY 0xDF
-#define THEME_POWERSHELL 0x1F
 
 /**
  * @brief Connect to your session
@@ -32,60 +27,60 @@ unsigned char _Running = False;
  */
 static boolean LOGIN()
 {
-    PUTS("login: ");
-    GETS(_User, sizeof(_User));
+    char user[] =  {
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0
+    };
+
+    PUTS("\nlogin: ");
+    GETS(user, sizeof(user));
 
     CPUTS("You have been logged in as ", 0xA);
-    CPUTS(_User, 0xA);
-    PUTS("\n\n");
+    CPUTS(user, 0xA);
+    PUTC('\n');
 
+    _User = &0[user];
     return True;
 }
 
-static void THEME_SELECTOR()
+static void KEYBOARD_SELECTOR()
 {
-    PUTS(" TERMINAL THEME\n\n");
-
-    PUTC('\t');
-    CPUTS("\t(0) DEFAULT   \t", 0x8F);
-    CPUTS("\t(1) LIGHT     \t\n", THEME_LIGHT);
-    PUTC('\t');
-    CPUTS("\t(2) GIRLY     \t", THEME_GIRLY);
-    CPUTS("\t(3) POWERSHELL\t\n", THEME_POWERSHELL);
-    CPUTS("\n Tap the theme number on your keyboard to activate it\n It doesn't work with numpad!\n\n", 0xC);
+    PUTS("\n KEYBOARD\n\n ");
+ 
+    CPUTS("\t1) QWERTY\t2) AZERTY\t\n", 0xF0);
+    CPUTS("\n Tap the keyboard number on your keyboard to activate it\n It doesn't work with numpad!\n", 0xC);
 
     while (1)
     {
-        switch (inb(KEYBOARD_PORT))
+        switch (GETC())
         {
-        case KEY_0:
-            return;
-
-        case KEY_1:
-            return SCREEN_COLOR(THEME_LIGHT);
-
-        case KEY_2:
-            return SCREEN_COLOR(THEME_GIRLY);
-
-        case KEY_3:
-            return SCREEN_COLOR(THEME_POWERSHELL);
-
+        case '1':
+            return KEYBOARD_INIT(QUERTY);
+        
+        case '2':
+            return KEYBOARD_INIT(AZERTY);
+        
         default:
             break;
         }
     }
 }
 
+static void setup()
+{
+    PUTS("\n\tBORIUM [Antoine LANDRIEUX MIT license]\n");
+    KEYBOARD_SELECTOR();
+    while (!LOGIN()) {;}
+}
+
 void start()
 {
+    SCREEN_CLEAR();
     _Running = True;
-    SCREEN_INIT();
 
-    PUTS("\n\tBORIUM [QWERTY] Antoine LANDRIEUX MIT license\n\n");
-    while (!LOGIN()) {;}
-    THEME_SELECTOR();
-
-    sleep(0xF222222);
+    setup();
     shell();
-    SCREEN_INIT();
 }

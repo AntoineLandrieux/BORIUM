@@ -1,18 +1,18 @@
-[org 0x7c00]                        
+[BITS 16]
+[ORG 0x7C00]
+
 KERNEL_LOCATION equ 0x1000
-                                    
 
-mov [BOOT_DISK], dl                 
+mov [BOOT_DISK], dl
 
-                                    
-xor ax, ax                          
+xor ax, ax
 mov es, ax
 mov ds, ax
 mov bp, 0x8000
 mov sp, bp
 
 mov bx, KERNEL_LOCATION
-mov dh, 20
+mov dh, 10
 
 mov ah, 0x02
 mov al, dh 
@@ -37,7 +37,7 @@ mov cr0, eax
 jmp CODE_SEG:start_protected_mode
 
 jmp $
-                                    
+
 BOOT_DISK: db 0
 
 GDT_start:
@@ -82,7 +82,6 @@ start_protected_mode:
 
     jmp KERNEL_LOCATION
 
-                                     
- 
-times 510-($-$$) db 0              
+
+times 510-($-$$) db 0
 dw 0xaa55

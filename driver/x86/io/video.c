@@ -11,7 +11,6 @@
  * MIT License
 */
 
-static uint8 screen_color = 0x0F;
 static uint16 VGA_POINTER = 0;
 
 void CPUTC(const char _Char, const unsigned char _Color)
@@ -54,12 +53,12 @@ void CPUTS(const char *_String, const unsigned char _Color)
 
 void PUTC(const char _Char)
 {
-    CPUTC(_Char, screen_color);
+    CPUTC(_Char, 0xF);
 }
 
 void PUTS(const char *_String)
 {
-    CPUTS(_String, screen_color);
+    CPUTS(_String, 0xF);
 }
 
 void CURSOR_MOVE_LEFT(unsigned int _Move)
@@ -84,29 +83,11 @@ void SCREEN_SCROLL()
     }
 }
 
-void SCREEN_COLOR(const unsigned char _Color)
-{
-    char *VIDEO = (char *)VGA_ADDRESS;
-    screen_color = _Color;
-
-    for (uint16 i = 1; i < (SCREEN * 2); i += 2)
-        VIDEO[i] = screen_color;
-}
-
 void SCREEN_CLEAR()
 {
     char *VIDEO = (char *)VGA_ADDRESS;
     VGA_POINTER = 0;
 
-    for (uint16 i = 0; i < (SCREEN * 2); i += 2)
-    {
+    for (uint16 i = 0; i < (SCREEN * 2); i++)
         VIDEO[i] = 0;
-        VIDEO[i + 1] = screen_color;
-    }
-}
-
-void SCREEN_INIT()
-{
-    screen_color = 0xF;
-    SCREEN_CLEAR();
 }

@@ -11,12 +11,14 @@
 ###############
 # FILES
 ###############
-OUT = borium.bin
+OUT = kenrel.bin
+ISO = borium.iso
 
 ###############
 # PATH
 ###############
 BIN_DIR = bin
+ISO_DIR = isodir/boot
 BOOT_DIR = boot/x86
 SHELL_DIR = shell
 KERNEL_DIR = kernel/x86
@@ -31,7 +33,7 @@ CFLAGS = -Wall -Wextra -I include -ffreestanding -m32 -fno-pie -fno-stack-protec
 
 
 default:
-	mkdir -p $(BIN_DIR)
+	mkdir -p $(BIN_DIR) $(ISO_DIR)
 
 	nasm $(BOOT_DIR)/boot.asm -f bin -o $(BIN_DIR)/boot.bin
 	nasm $(BOOT_DIR)/entry.asm -f elf -o $(BIN_DIR)/entry.o
@@ -41,13 +43,17 @@ default:
 	gcc $(CFLAGS) -c $(SHELL_DIR)/shell.c -o $(BIN_DIR)/shell.o
 	gcc $(CFLAGS) -c $(DRIVER_DIR)/keyboard.c -o $(BIN_DIR)/keyboard.o
 	ld -m elf_i386 -T $(LINKER_SCRIPT) -o $(BIN_DIR)/kernelfull.bin $(BIN_DIR)/entry.o $(BIN_DIR)/kernel.o $(BIN_DIR)/video.o $(BIN_DIR)/keyboard.o $(BIN_DIR)/shell.o --oformat binary
-	(cat $(BIN_DIR)/boot.bin ; cat $(BIN_DIR)/kernelfull.bin) > $(BIN_DIR)/$(OUT)
+	(cat $(BIN_DIR)/boot.bin ; cat $(BIN_DIR)/kernelfull.bin) > $(ISO_DIR)/$(OUT)
+
+	dd if=/dev/zero of=$(ISO_DIR)/$(ISO:.iso=.img) bs=1024 count=1440
+	dd if=$(ISO_DIR)/$(OUT) of=$(ISO_DIR)/$(ISO:.iso=.img) conv=notrunc seek=0
+	mkisofs -quiet -V 'BORIUM' -input-charset iso8859-1 -o $(ISO_DIR)/$(ISO) -b $(ISO:.iso=.img) $(ISO_DIR)
 
 
 run:
-	qemu-system-x86_64 $(BIN_DIR)/$(OUT) -no-reboot
+	qemu-system-x86_64 -cdrom $(ISO_DIR)/$(ISO)
 
 
 clean:
-	rm -drf $(BIN_DIR)
-
+	rm -drf $(BIN_DIR) $(ISO_DIR)
+	rm -rf *.iso *.img *.bin

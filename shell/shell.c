@@ -16,6 +16,13 @@
  * MIT License
 */
 
+void help()
+{
+    CPUTS("help  : show all commands | reload   : reset your computer\n", 0x7);
+    CPUTS("echo  : print message     | license  : show license\n", 0x7);
+    CPUTS("clear : clear screen      | shutdown : turn off your computer\n", 0x7);
+}
+
 boolean strcmp(char *_Dest, const char *_Source, uint64 _Size)
 {
     for (uint64 i = 0; i < _Size; i++)
@@ -31,11 +38,7 @@ void ParseShell(char *_Code)
         return;
 
     if (strcmp(_Code, "help", 4))
-    {
-        PUTS("help  : show all commands | reload   : reset your computer\n");
-        PUTS("echo  : print message     | license  : show license\n");
-        PUTS("clear : clear screen      | shutdown : turn off your computer\n");
-    }
+        help();
 
     else if (strcmp(_Code, "echo", 4))
         for (uint8 i = 5; _Code[i]; i++)
@@ -48,15 +51,15 @@ void ParseShell(char *_Code)
         return start();
 
     else if (strcmp(_Code, "license", 7))
-        PUTS("Antoine LANDRIEUX (MIT license)");
+        CPUTS("Antoine LANDRIEUX (MIT license)\n", 0x7);
 
     else if (strcmp(_Code, "shutdown", 8))
         _Running = False;
 
     else
     {
-        CPUTS("Unknown command:\nAt: ", 0xC);
-        CPUTS(_Code, 0xC);
+        CPUTS("Unknown command:\nAt: ", 0xC0);
+        CPUTS(_Code, 0xC0);
     }
 }
 
@@ -72,8 +75,10 @@ void shell()
             0, 0, 0, 0, 0
         };
 
-        PUTS("\nBorium@");
-        PUTS(_User);
+        PUTC('\n');
+        CPUTS(_User, 0xC);
+        CPUTC('@', 0xE);
+        CPUTS("Borium", 0xA);
         PUTS("$ ");
 
         GETS(code, sizeof(code));

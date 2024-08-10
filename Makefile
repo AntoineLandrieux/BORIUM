@@ -33,7 +33,7 @@ CFLAGS = -Wall -Wextra -I include -ffreestanding -m32 -fno-pie -fno-stack-protec
 
 
 default:
-	mkdir -p $(BIN_DIR) $(ISO_DIR)
+	mkdir -p $(BIN_DIR) $(ISO_DIR)/BOOT/ROMS
 
 	nasm $(BOOT_DIR)/boot.asm -f bin -o $(BIN_DIR)/boot.bin
 	nasm $(BOOT_DIR)/entry.asm -f elf -o $(BIN_DIR)/entry.o

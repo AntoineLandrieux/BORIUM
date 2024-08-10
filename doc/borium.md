@@ -11,13 +11,13 @@
 
 ```sh
 apt-get update && apt-get upgrade
-sudo apt-get install nasm xorriso qemu build-essential grub2-common
+sudo apt-get install nasm build-essential mkisofs
 ```
 
 ### COMPILE AND RUN
 
 After installing the OS compilation tools,
-You can compile and run the OS with these commands:
+You can compile and run the OS with these commands (QEMU is required for `make run`) :
 
 ```sh
 make && make run

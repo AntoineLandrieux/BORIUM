@@ -1,0 +1,22 @@
+# IDE
+
+.vscode/
+.idea/
+
+# TMP
+
+bin/
+lib/
+min/
+tmp/
+
+# BIN
+
+*.a
+*.o
+*.out
+*.bin
+*.exe
+*.res
+*.iso
+*.img

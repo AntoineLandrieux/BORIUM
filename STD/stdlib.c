@@ -25,7 +25,7 @@ static char *mfree = memory;
  * @param size
  * @return void*
  */
-void *malloc(unsigned long long size)
+void *malloc(size_t size)
 {
     if ((mfree + size) > (memory + __MEMORY_POOL_SIZE__))
         return NULL;
@@ -41,7 +41,7 @@ void *malloc(unsigned long long size)
  */
 void free()
 {
-    for (unsigned long long i = 0; i < sizeof(memory); i++)
+    for (size_t i = 0; i < sizeof(memory); i++)
         memory[i] = 0;
     mfree = memory;
 }

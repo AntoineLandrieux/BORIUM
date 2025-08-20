@@ -16,45 +16,29 @@
  */
 
 #define KEYBOARD_PORT 0x60
-#define KEY_BACKSPACE 0x0E
 
-typedef enum keyboard_input
+/**
+ * @brief Keyboard layout selector
+ */
+typedef enum keyboard_layout
 {
 
     QUERTY,
-    AZERTY
+    AZERTY,
 
-} KEYBOARD_INPUT;
+    MAX_KEYBOARD_LAYOUT
+
+} KEYBOARD_LAYOUT;
 
 /**
  * @brief Initialize keyboard
- * @author Antoine LANDRIEUX
  *
- * @param keyboard
+ * @param _Keyboard
  */
-void KEYBOARD_INIT(KEYBOARD_INPUT keyboard);
-
-/**
- * @brief inb function
- * @author Antoine LANDRIEUX
- *
- * @param port
- * @return unsigned char
- */
-unsigned char inb(unsigned short port);
-
-/**
- * @brief Convert inb to ascii char (QUERTY mode)
- * @author Antoine LANDRIEUX
- *
- * @param keycode
- * @return char
- */
-char ascii_char(unsigned char keycode, unsigned char shift_pressed);
+void KEYBOARD_INIT(KEYBOARD_LAYOUT _Keyboard);
 
 /**
  * @brief Get char
- * @author Antoine LANDRIEUX
  *
  * @return char
  */
@@ -62,11 +46,10 @@ char GETC();
 
 /**
  * @brief Get string
- * @author Antoine LANDRIEUX
  *
  * @param dest
  * @param size
  */
-void GETS(char *dest, unsigned int size);
+void GETS(char *dest, long unsigned int size);
 
 #endif /* __KEYBOARD_H__ */

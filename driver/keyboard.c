@@ -1,6 +1,9 @@
 #include <DRIVER/keyboard.h>
 #include <DRIVER/video.h>
 
+#include <STD/stddef.h>
+#include <STD/stdint.h>
+
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -15,13 +18,14 @@
  *
  */
 
-static KEYBOARD_INPUT keyboard = QUERTY;
+static KEYBOARD_LAYOUT keyboard = QUERTY;
 
-static const char KEYBOARDS[][58] = {
+// Keyboard layout
+static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     /* QWERTY */
     {
         //
-        0, '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '=', 0,
+        0, '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '=', '\b',
         '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', '\n',
         0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', '"', 0,
         0, 0, 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', 0, 0, 0, ' '
@@ -30,7 +34,7 @@ static const char KEYBOARDS[][58] = {
     /* AZERTY */
     {
         //
-        0, 0, '&', '<', '"', '\'', '(', '-', '>', '_', 0, '@', ')', '=', 0,
+        0, 0, '&', '<', '"', '\'', '(', '-', '>', '_', 0, '@', ')', '=', '\b',
         '\t', 'a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '^', '$', '\n',
         0, 'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 0, 0,
         0, '*', 'w', 'x', 'c', 'v', 'b', 'n', ',', ';', ':', '!', 0, 0, 0, ' '
@@ -39,11 +43,12 @@ static const char KEYBOARDS[][58] = {
     //
 };
 
-static const char SHIFTED_KEYBOARDS[][58] = {
+// Keyboard layout (shifted)
+static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     /* QWERTY */
     {
         //
-        0, '~', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+', 0,
+        0, '~', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+', '\b',
         '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n',
         0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', 0,
         0, 0, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, 0, 0, ' '
@@ -52,7 +57,7 @@ static const char SHIFTED_KEYBOARDS[][58] = {
     /* AZERTY */
     {
         //
-        0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, '+', 0,
+        0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, '+', '\b',
         '\t', 'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, '*', '\n',
         0, 'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', '%', 0,
         0, 0, 'W', 'X', 'C', 'V', 'B', 'N', '?', '.', '/', 0, 0, 0, 0, ' '
@@ -61,100 +66,125 @@ static const char SHIFTED_KEYBOARDS[][58] = {
     //
 };
 
-void KEYBOARD_INIT(KEYBOARD_INPUT _Keyboard)
+/**
+ * @brief Initialize keyboard
+ *
+ * @param _Keyboard
+ */
+void KEYBOARD_INIT(KEYBOARD_LAYOUT _Keyboard)
 {
     keyboard = _Keyboard;
 }
 
-void sleep(unsigned long long time)
+static inline uint8_t inb(uint8_t port)
 {
-    while (1)
-    {
-        __asm__ __volatile__("nop");
-        time--;
-        if (time <= 0)
-            break;
-    }
-}
-
-unsigned char inb(unsigned short port)
-{
-    unsigned char data;
+    uint8_t data;
     __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
     return data;
 }
 
-char ascii_char(unsigned char keycode, unsigned char shift_pressed)
+static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
 {
     if (keycode >= sizeof(KEYBOARDS[keyboard]))
         return 0;
-
-    if (shift_pressed)
-        return SHIFTED_KEYBOARDS[keyboard][keycode];
-    else
-        return KEYBOARDS[keyboard][keycode];
+    return shift_pressed ? SHIFTED_KEYBOARDS[keyboard][keycode] : KEYBOARDS[keyboard][keycode];
 }
 
+static inline uint8_t is_shift_key(uint8_t keycode)
+{
+    return keycode == 0x2A || keycode == 0x36;
+}
+
+static inline uint8_t is_shift_release(uint8_t keycode)
+{
+    return keycode == 0xAA || keycode == 0xB6;
+}
+
+/**
+ * @brief Get char
+ *
+ * @return char
+ */
 char GETC()
 {
     char c = 0;
-    unsigned char shift_pressed = 0;
+    uint8_t shift_pressed = 0;
 
     while (!c)
     {
-        unsigned char keycode = inb(KEYBOARD_PORT);
+        uint8_t keycode = inb(KEYBOARD_PORT);
 
-        if (keycode == 0x2A || keycode == 0x36)
+        if (is_shift_key(keycode))
+        {
             shift_pressed = 1;
-        else if (keycode == 0xAA || keycode == 0xB6)
+            continue;
+        }
+
+        if (is_shift_release(keycode))
+        {
             shift_pressed = 0;
-        else
-            c = ascii_char(keycode, shift_pressed);
+            continue;
+        }
+
+        c = ascii_char(keycode, shift_pressed);
+
+        // Wait for key release
+        while (inb(KEYBOARD_PORT) == keycode)
+            /* pass */;
     }
 
     return c;
 }
 
-void GETS(char *dest, unsigned int size)
+/**
+ * @brief Get string
+ *
+ * @param dest
+ * @param size
+ */
+void GETS(char *dest, long unsigned int size)
 {
     if (size <= 0)
         return;
 
-    unsigned char shift_pressed = 0;
-    unsigned char keycode = 0;
-    unsigned int n = 0;
-    char c = 0;
+    // Length
+    size_t tlen = 0;
 
     while (1)
     {
-        sleep(0x5FFFFFF);
-        keycode = inb(KEYBOARD_PORT);
+        char c = GETC();
 
-        if (keycode == KEY_BACKSPACE && n > 0)
+        // Backspace
+        if (c == '\b')
         {
-            n--;
-            dest[n] = 0;
-            PUTC('\b');
-        }
-
-        if (keycode == 0x2A || keycode == 0x36)
-            shift_pressed = 1;
-        else if (keycode == 0xAA || keycode == 0xB6)
-            shift_pressed = 0;
-        else
-            c = ascii_char(keycode, shift_pressed);
-
-        if (!c || n > size)
+            if (tlen)
+            {
+                tlen--;
+                dest--;
+                PUTC(c);
+            }
+            *dest = 0;
             continue;
-
+        }
+        
+        // Enter key
         if (c == '\n')
             break;
 
-        dest[n] = c;
+        // Prevent overflow
+        if (tlen >= size)
+            continue;
+
+        // Print character
         PUTC(c);
-        n++;
+
+        // Update dest
+        *dest = c;
+
+        // Increment tlen and dest pointer
+        tlen++;
+        dest++;
     }
 
-    dest[n] = 0;
-    PUTC(c);
+    PUTC('\n');
 }

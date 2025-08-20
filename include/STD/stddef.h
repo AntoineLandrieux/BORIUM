@@ -1,5 +1,5 @@
-#ifndef __ASSERT_H__
-#define __ASSERT_H__ 0x1
+#ifndef __STDDEF_H__
+#define __STDDEF_H__ 0x1
 
 /**
  *
@@ -10,12 +10,18 @@
  * | |_/ /\ \_/ / |\ \ _| |_| |_| | |  | |
  * \____/  \___/\_| \_|\___/ \___/\_|  |_/
  *
- * Antoine LANDRIEUX (MIT License) <assert.h>
+ * Antoine LANDRIEUX (MIT License) <stddef.h>
  * <https://github.com/AntoineLandrieux/BORIUM/>
  *
  */
 
-// TODO: Implement assert
-#define assert(condition) while ((!!(condition)));
+#define NULL ((void *)(0x00))
 
-#endif /* __ASSERT_H__ */
+#ifdef __SIZE_TYPE__
+#undef __SIZE_TYPE__
+#endif /* __SIZE_TYPE__ */
+
+#define __SIZE_TYPE__ long unsigned int
+typedef __SIZE_TYPE__ size_t;
+
+#endif /* __STDDEF_H__ */

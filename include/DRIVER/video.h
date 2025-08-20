@@ -15,12 +15,44 @@
  *
  */
 
-#define VGA_ADDRESS 0xB8000
+/* ADDRESSES */
 
-#define SCREEN_HEIGHT 25
-#define SCREEN_WIDTH 80
+#define VGA_DRAW_ADDRESS 0xA0000
+#define VGA_TEXT_ADDRESS 0xB8000
 
-#define SCREEN (SCREEN_HEIGHT * SCREEN_WIDTH)
+/* DRAW */
+
+#define SCREEN_DRAW_WIDTH 320
+#define SCREEN_DRAW_HEIGHT 200
+
+#define SCREEN_DRAW (SCREEN_DRAW_HEIGHT * SCREEN_DRAW_WIDTH)
+
+/* TEXT */
+
+#define SCREEN_TEXT_WIDTH 80
+#define SCREEN_TEXT_HEIGHT 25
+
+#define SCREEN_TEXT (SCREEN_TEXT_HEIGHT * SCREEN_TEXT_WIDTH)
+
+/**
+ * @brief Place a pixel to the screen
+ * 
+ * @param x 
+ * @param y 
+ * @param color 
+ */
+void PUT_PIXEL(unsigned short x, unsigned short y, unsigned char color);
+
+/**
+ * @brief Fill rectangle to the screen
+ * 
+ * @param x 
+ * @param y 
+ * @param w 
+ * @param h 
+ * @param color 
+ */
+void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned char color);
 
 /**
  * @brief Writes single character to stream output at current position (colored)
@@ -51,12 +83,6 @@ void PUTC(const char character);
  * @param string
  */
 void PUTS(const char *string);
-
-/**
- * @brief Scroll the screen
- *
- */
-void SCREEN_SCROLL();
 
 /**
  * @brief Clear screen

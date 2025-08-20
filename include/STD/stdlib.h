@@ -15,9 +15,9 @@
  *
  */
 
-#define __MEMORY_POOL_SIZE__ 0x2000
+#include "stddef.h"
 
-#define NULL (void *)(0x0)
+#define __MEMORY_POOL_SIZE__ 0x2000
 
 /**
  * @brief Memory allocation
@@ -25,7 +25,7 @@
  * @param size
  * @return void*
  */
-void *malloc(unsigned long long size);
+void *malloc(size_t size);
 
 /**
  * @brief Free allocated memory

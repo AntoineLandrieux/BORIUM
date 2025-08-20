@@ -2,6 +2,7 @@
 #include <DRIVER/video.h>
 
 #include <STD/stdlib.h>
+#include <STD/stdint.h>
 
 #include <SOARE/SOARE.h>
 
@@ -26,7 +27,7 @@ unsigned char running = 0;
 
 /**
  * @brief Select the keyboard layout
- * 
+ *
  */
 static void KEYBOARD_SELECTOR()
 {
@@ -52,7 +53,7 @@ static void KEYBOARD_SELECTOR()
 
 /**
  * @brief Shell for the interpreter
- * 
+ *
  */
 static void shell()
 {
@@ -77,7 +78,6 @@ static void shell()
 
         else if (!strcmp(user, "?commit"))
         {
-
             Execute(input);
             free();
             for (unsigned int i = 0; i < sizeof(input); i++)
@@ -129,7 +129,7 @@ static void shell()
 
 /**
  * @brief Setup the kernel
- * 
+ *
  */
 static void setup()
 {
@@ -139,13 +139,14 @@ static void setup()
 
 /**
  * @brief Start the kernel
- * 
- * @return * void 
+ *
  */
 void start()
 {
-    running = 1;
     SCREEN_CLEAR();
+
+    running = 1;
+
     setup();
     shell();
 }

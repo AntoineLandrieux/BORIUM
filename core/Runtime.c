@@ -1,7 +1,10 @@
+#include <STD/stdlib.h>
+#include <STD/stdarg.h>
+
 #include <DRIVER/keyboard.h>
 #include <DRIVER/video.h>
 
-#include <STD/stdlib.h>
+#include <kernel.h>
 
 /**
  *  _____  _____  ___  ______ _____
@@ -21,31 +24,6 @@
 static MEM FUNCTION = NULL;
 
 /**
- * @brief Exit current statement #Runtime(AST)
- *
- * @param returns
- * @return char*
- */
-static char *ExitStatement(MEM statement, char *returns)
-{
-    statement->next = NULL;
-    return returns;
-}
-
-/**
- * @brief Exit current statement an error #Runtime(AST)
- *
- * @param error
- * @param string
- * @param file
- * @return void*
- */
-static void *ExitStatementError(MEM statement, SoareExceptions error, char *string)
-{
-    return ExitStatement(statement, LeaveException(error, string));
-}
-
-/**
  * @brief Executes code from a tree
  *
  * @param tree
@@ -56,23 +34,24 @@ static char *Runtime(AST tree);
 /**
  * @brief Set Interpreter variables
  *
+ * @param file
  */
-static void InterpreterVar()
+static void InterpreterVar(char *file)
 {
     MEMORY = Mem();
 
     /* SOARE version */
-    MemPush(MEMORY, "__SOARE__", SOARE_VERSION);
+    MemPush(MEMORY, "__SOARE__", strdup(SOARE_VERSION));
     /* Current file */
-    MemPush(MEMORY, "__FILE__", "stdin");
+    MemPush(MEMORY, "__FILE__", strdup(file));
     /* Path to SOARE executable */
-    MemPush(MEMORY, "__ENVIRONMENT__", GetEnvironment());
+    MemPush(MEMORY, "__ENVIRONMENT__", strdup(GetEnvironment()));
     /* Errors */
-    MemPush(MEMORY, "__ERROR__", "NoError");
+    MemPush(MEMORY, "__ERROR__", strdup("NoError"));
     /* Build date */
-    MemPush(MEMORY, "__BUILD__", __DATE__);
+    MemPush(MEMORY, "__BUILD__", strdup(__DATE__));
     /* Current OS */
-    MemPush(MEMORY, "__PLATFORM__", "BORIUM");
+    MemPush(MEMORY, "__PLATFORM__", strdup(__PLATFORM__));
 }
 
 /**
@@ -88,11 +67,11 @@ char *RunFunction(AST tree)
 
     // Memory not found
     if (!get)
-        return LeaveException(UndefinedReference, tree->value);
+        return LeaveException(UndefinedReference, tree->value, tree->file);
 
     // Memory is not a function
     if (!get->body)
-        return LeaveException(ObjectIsNotCallable, tree->value);
+        return LeaveException(ObjectIsNotCallable, tree->value, tree->file);
 
     // Arguments
     AST ptr = get->body->child;
@@ -103,7 +82,7 @@ char *RunFunction(AST tree)
 
     while (ptr)
     {
-        // Execute statement (no more argument required)
+        // Execute MEMORY (no more argument required)
         if (ptr->type == NODE_BODY)
         {
             FUNCTION = memf;
@@ -113,8 +92,9 @@ char *RunFunction(AST tree)
         // Not enough argument
         if (!src)
         {
+            MemFree(memf);
             memf = NULL;
-            return LeaveException(UndefinedReference, ptr->value);
+            return LeaveException(UndefinedReference, ptr->value, tree->file);
         }
 
         get = NULL;
@@ -130,7 +110,7 @@ char *RunFunction(AST tree)
 
         // If argument is not a function
         if (!get || !func)
-            MemPush(memf, ptr->value, Math(src));
+            MemPush(memf, ptr->value, Eval(src));
 
         // Next argument
         src = src->sibling;
@@ -162,23 +142,113 @@ static char *Runtime(AST tree)
 
     broken = 0;
 
-    MEM statement = MemLast(MEMORY);
-    MemJoin(statement, FUNCTION);
+    MemJoin(MEMORY, FUNCTION);
     FUNCTION = NULL;
 
     for (AST curr = root->child; curr && !ErrorLevel(); curr = curr->sibling)
     {
         switch (curr->type)
         {
-        // Execute shell command
+            /**
+             *
+             * BORIUM EXECUTABLE
+             *
+             */
+
+        case NODE_BORIUM_CLEAR:
+            SCREEN_CLEAR();
+            break;
+
+        case NODE_BORIUM_COLOR:
+            if ((returned = Eval(curr->child)))
+                SET_LOCAL_COLOR(atoi(returned));
+            break;
+
+        case NODE_BORIUM_CURSOR:
+            if ((returned = Eval(curr->child)))
+                SET_CURSOR(atoi(returned));
+            break;
+
+        case NODE_BORIUM_EDITOR:
+            EDITOR();
+            break;
+
+        case NODE_BORIUM_GETC:
+            if ((get = MemGet(MEMORY, curr->value)))
+            {
+                if ((returned = malloc(2)))
+                    return __SOARE_OUT_OF_MEMORY();
+                returned[0] = GETC();
+                returned[1] = 0;
+                MemSet(get, returned);
+                break;
+            }
+
+            return LeaveException(UndefinedReference, curr->value, curr->file);
+
+        case NODE_BORIUM_HELP:
+            PUTS(
+                //
+                "\n HELP \n"
+                " \t clear   -> Clear screen \n"
+                " \t color   -> Text color \n"
+                " \t cursor  -> Set cursor location \n"
+                " \t editor  -> Text editor \n"
+                " \t getc    -> Get char \n"
+                " \t help    -> Show commands \n"
+                " \t license -> Show license \n"
+                " \t pause   -> Interrupts the execution \n"
+                " \t setup   -> Change BORIUM settings \n"
+                " \t sleep   -> Pause for a while \n"
+                //
+            );
+            break;
+
+        case NODE_BORIUM_LICENSE:
+            PUTS(
+                //
+                "\n"
+                "BORIUM 2025 Antoine LANDRIEUX (MIT LICENSE)\n"
+                "<https://github.com/AntoineLandrieux/BORIUM>\n"
+                "SOARE 2024-2025 Antoine LANDRIEUX (MIT LICENSE)\n"
+                "<https://github.com/AntoineLandrieux/SOARE>\n"
+                "\n"
+                //
+            );
+            break;
+
+        case NODE_BORIUM_PAUSE:
+            PUTS("\nPress any key to continue...\n");
+            GETC();
+            break;
+
+        case NODE_BORIUM_SETUP:
+            SETUP();
+            break;
+
+        case NODE_BORIUM_SLEEP:
+            if ((returned = Eval(curr->child)))
+                SLEEP(atoi(returned) * 1000);
+            break;
+
+        /**
+         *
+         * DEFAULT SOARE EXECUTABLE
+         *
+         */
+
+        // Execute shell code
         case NODE_SHELL:
 
-            Execute(Math(curr->child));
+            returned = Eval(curr->child);
+            system(returned);
+            free(returned);
+            break;
 
         // Store function into MEMORY
         case NODE_FUNCTION:
 
-            MemPushf(statement, curr->value, curr);
+            MemPushf(MEMORY, curr->value, curr);
             break;
 
         // User input
@@ -186,79 +256,83 @@ static char *Runtime(AST tree)
 
             if ((get = MemGet(MEMORY, curr->value)))
             {
-                get->value = malloc(__SOARE_MAX_INPUT__);
-
-                if (!get->value)
-                    return ExitStatementError(statement, InterpreterError, "OUT OF MEMORY");
-                
-                GETS(get->value, __SOARE_MAX_INPUT__);
+                char input[__SOARE_MAX_INPUT__] = {0};
+                soare_input(input);
+                MemSet(get, strdup(input));
                 break;
             }
-            else
-                return ExitStatementError(statement, UndefinedReference, curr->value);
+
+            return LeaveException(UndefinedReference, curr->value, curr->file);
 
         // Call a function
         case NODE_CALL:
 
-            RunFunction(curr);
+            free(RunFunction(curr));
             break;
 
         // Push a new variable into MEMORY
         case NODE_MEMNEW:
 
-            MemPush(statement, curr->value, Math(curr->child));
+            MemPush(MEMORY, curr->value, Eval(curr->child));
             break;
 
         // Set a value to a variable
         case NODE_MEMSET:
 
             if (!(get = MemGet(MEMORY, curr->value)))
-                return ExitStatementError(statement, UndefinedReference, curr->value);
+                return LeaveException(UndefinedReference, curr->value, curr->file);
 
             if (get->body)
-                return ExitStatementError(statement, VariableDefinedAsFunction, curr->value);
+                return LeaveException(VariableDefinedAsFunction, curr->value, curr->file);
 
-            MemSet(get, Math(curr->child));
+            MemSet(get, Eval(curr->child));
             break;
 
-        // Condition statement (if)
+        // Condition MEMORY (if)
         case NODE_CONDITION:
 
-            returned = Math(curr->child);
+            returned = Eval(curr->child);
             tmp = curr->child;
 
             while (returned)
             {
                 if (strcmp(returned, "0"))
                 {
+                    free(returned);
+
                     if ((returned = Runtime(tmp->sibling)) || broken)
-                        return ExitStatement(statement, returned);
+                        return returned;
 
                     break;
                 }
 
+                free(returned);
+
                 if (!(tmp = tmp->sibling->sibling))
                     break;
 
-                returned = Math(tmp);
+                returned = Eval(tmp);
             }
             break;
 
-        // Repetition statement (while)
+        // Repetition MEMORY (while)
         case NODE_REPETITION:
 
-            while ((returned = Math(curr->child)))
+            while ((returned = Eval(curr->child)))
             {
                 if (!strcmp(returned, "0") || ErrorLevel() || broken)
                     break;
 
+                free(returned);
+
                 if ((returned = Runtime(curr->child->sibling)))
-                    return ExitStatement(statement, returned);
+                    return returned;
             }
 
+            free(returned);
             break;
 
-        // try/iferror statement
+        // try/iferror MEMORY
         case NODE_TRY:
 
             error = AsIgnoredException();
@@ -268,6 +342,7 @@ static char *Runtime(AST tree)
 
             if (ErrorLevel() && !broken)
             {
+                free(returned);
                 ClearException();
                 returned = Runtime(curr->child->sibling);
             }
@@ -275,30 +350,33 @@ static char *Runtime(AST tree)
             if (!returned && !broken)
                 break;
 
-            return ExitStatement(statement, returned);
+            return returned;
 
         // Print
         case NODE_OUTPUT:
 
-            PUTS(Math(curr->child));
-            PUTC('\n');
+            if ((returned = Eval(curr->child)))
+            {
+                soare_write(returned);
+                free(returned);
+            }
             break;
 
         // Break loop
         case NODE_BREAK:
 
             broken = 1;
-            return ExitStatement(statement, NULL);
+            return NULL;
 
         // Return
         case NODE_RETURN:
 
-            return ExitStatement(statement, Math(curr->child));
+            return Eval(curr->child);
 
         // Leave new exception
         case NODE_RAISE:
 
-            return ExitStatementError(statement, RaiseException, curr->value);
+            return LeaveException(RaiseException, curr->value, curr->file);
 
         default:
 
@@ -307,7 +385,7 @@ static char *Runtime(AST tree)
     }
 
     // Quit
-    return ExitStatement(statement, NULL);
+    return NULL;
 }
 
 /**
@@ -315,22 +393,36 @@ static char *Runtime(AST tree)
  *
  * @param rawcode
  */
-int Execute(char *rawcode)
+int Execute(char *__restrict__ file, char *__restrict__ rawcode)
 {
     if (!MEMORY)
         // Set default vars..
-        InterpreterVar();
+        InterpreterVar(file);
 
     // Clear interpreter exception
     ClearException();
 
     // Interpretation step 1: Tokenizer
-    Tokens *tokens = Tokenizer(rawcode);
+    Tokens *tokens = Tokenizer(file, rawcode);
     // Interpretation step 2: Parser
     AST ast = Parse(tokens);
 
+#ifdef __SOARE_DEBUG
+    // DEBUG: print tokens and trees
+    TreeLog(ast);
+    TokensLog(tokens);
+#endif
+
+    // Free tokens
+    TokensFree(tokens);
+
     // Interpretation step 3: Runtime
-    Runtime(ast);
+    free(Runtime(ast));
+
+    // Free AST
+    TreeFree(ast);
+    // Free MEMORY
+    MemFree(MEMORY);
 
     // Set MEMORY to NULL
     MEMORY = NULL;

@@ -1,21 +1,13 @@
-SECTIONS {
+ENTRY(_start)
 
-    . = 0x1000;
-    
+SECTIONS {
+    . = 0x100000;
+
     .text : {
+        *(.multiboot_header)
         *(.text)
     }
-    
-    .data : {
-        *(.data)
-    }
-    
-    .rodata : {
-        *(.rodata)
-    }
 
-    .bss : {
-        *(.bss)
-    }
-
+    .data : { *(.data) }
+    .bss  : { *(.bss) }
 }

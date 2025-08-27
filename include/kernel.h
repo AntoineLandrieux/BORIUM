@@ -16,17 +16,39 @@
  */
 
 // Kernel version
-#define BORIUM_KERNEL_VERSION "Rv1.0.0"
+#define BORIUM_KERNEL_VERSION "Rv1.1.0"
 
 // Kernel version major
 #define BORIUM_KERNEL_MAJOR 1
 // Kernel version minor
-#define BORIUM_KERNEL_MINOR 0
+#define BORIUM_KERNEL_MINOR 1
 // Kernel version patch
 #define BORIUM_KERNEL_PATCH 0
 
 // Is the kernel running?
 extern unsigned char running;
+
+// Username
+extern char USERNAME[20];
+
+/**
+ * @brief Sleep miliseconds
+ * 
+ * @param ms 
+ */
+void SLEEP(unsigned int ms);
+
+/**
+ * @brief Text editor
+ * 
+ */
+void EDITOR(void);
+
+/**
+ * @brief Setup the kernel
+ *
+ */
+void SETUP();
 
 /**
  * @brief Start kernel

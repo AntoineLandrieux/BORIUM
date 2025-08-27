@@ -35,22 +35,43 @@
 #define SCREEN_TEXT (SCREEN_TEXT_HEIGHT * SCREEN_TEXT_WIDTH)
 
 /**
+ * @brief Outb
+ *
+ * @param port
+ * @param value
+ */
+void outb(unsigned short port, unsigned char value);
+
+/**
+ * @brief If move cursor
+ *
+ * @param move_cursor
+ */
+void UPDATE_AND_MOVE_CURSOR(unsigned char move_cursor);
+
+/**
+ * @brief Enable text blinking
+ *
+ */
+void TEXT_BLINKING(unsigned char enable);
+
+/**
  * @brief Place a pixel to the screen
- * 
- * @param x 
- * @param y 
- * @param color 
+ *
+ * @param x
+ * @param y
+ * @param color
  */
 void PUT_PIXEL(unsigned short x, unsigned short y, unsigned char color);
 
 /**
  * @brief Fill rectangle to the screen
- * 
- * @param x 
- * @param y 
- * @param w 
- * @param h 
- * @param color 
+ *
+ * @param x
+ * @param y
+ * @param w
+ * @param h
+ * @param color
  */
 void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned char color);
 
@@ -83,6 +104,41 @@ void PUTC(const char character);
  * @param string
  */
 void PUTS(const char *string);
+
+/**
+ * @brief Get cursor location
+ *
+ * @return unsigned short
+ */
+unsigned short GET_CURSOR();
+
+/**
+ * @brief Set cursor location
+ *
+ * @param cursor
+ */
+void SET_CURSOR(unsigned short cursor);
+
+/**
+ * @brief Set local console color
+ *
+ * @param color
+ */
+void SET_LOCAL_COLOR(unsigned char color);
+
+/**
+ * @brief Set global console color
+ *
+ * @param color
+ */
+void SET_GLOBAL_COLOR(unsigned char color);
+
+/**
+ * @brief Get global console color
+ *
+ * @param color
+ */
+unsigned char GET_GLOBAL_COLOR(void);
 
 /**
  * @brief Clear screen

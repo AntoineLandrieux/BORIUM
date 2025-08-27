@@ -1,6 +1,8 @@
-#include <DRIVER/video.h>
-
 #include <STD/stdlib.h>
+#include <STD/stdarg.h>
+
+#include <DRIVER/keyboard.h>
+#include <DRIVER/video.h>
 
 /**
  *  _____  _____  ___  ______ _____
@@ -56,7 +58,7 @@ MEM MemLast(MEM memory)
 }
 
 /**
- * @brief Add a variable to an existing memory
+ * @brief Add a variable to an existing memory (free value if memory is NULL or if MemPush fail)
  *
  * @param memory
  * @param name
@@ -65,14 +67,20 @@ MEM MemLast(MEM memory)
 MEM MemPush(mem *memory, char *name, char *value)
 {
     if (!memory)
+    {
+        free(value);
         return NULL;
+    }
 
     MEM mem = MemLast(memory);
     mem->next = (MEM)malloc(sizeof(struct mem));
     mem = mem->next;
 
     if (!mem)
+    {
+        free(value);
         return __SOARE_OUT_OF_MEMORY();
+    }
 
     mem->next = NULL;
     mem->body = NULL;
@@ -117,7 +125,7 @@ MEM MemGet(MEM memory, char *name)
 }
 
 /**
- * @brief Update a variable
+ * @brief Update a variable (free value if memory is NULL)
  *
  * @param memory
  * @param name
@@ -126,8 +134,12 @@ MEM MemGet(MEM memory, char *name)
 MEM MemSet(MEM memory, char *value)
 {
     if (!memory)
+    {
+        free(value);
         return NULL;
+    }
 
+    free(memory->value);
     memory->value = value;
     return memory;
 }
@@ -143,4 +155,24 @@ void MemJoin(MEM to, MEM from)
     if (!to || !from)
         return;
     MemLast(to)->next = from;
+}
+
+/**
+ * @brief Free the allocated memory
+ *
+ * @param memory
+ */
+void MemFree(MEM memory)
+{
+    if (!memory)
+        return;
+
+    MemFree(memory->next);
+    free(memory->value);
+    free(memory);
+}
+
+static void __attribute__((destructor)) kill(void)
+{
+    MemFree(MEMORY);
 }

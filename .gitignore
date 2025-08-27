@@ -1,22 +1,37 @@
+
+#
+#  _____  _____ _____ _____ _   _ __  __
+# | ___ \|  _  | ___ \_   _| | | |  \/  |
+# | |_/ /| | | | |_/ / | | | | | | .  . |
+# | ___ \| | | |    /  | | | | | | |\/| |
+# | |_/ /\ \_/ / |\ \ _| |_| |_| | |  | |
+# \____/  \___/\_| \_|\___/ \___/\_|  |_/
+#
+# Antoine LANDRIEUX (MIT License) <.gitignore>
+# <https://github.com/AntoineLandrieux/BORIUM/>
+#
+
 # IDE
 
-.vscode/
 .idea/
+.vscode/
 
-# TMP
+# TEMP
 
 bin/
 lib/
 min/
 tmp/
 
-# BIN
+# BINARY
 
 *.a
 *.o
 *.out
 *.bin
 *.exe
+*.dll
 *.res
 *.iso
 *.img
+*.elf

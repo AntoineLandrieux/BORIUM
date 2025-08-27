@@ -53,7 +53,7 @@ MEM Mem(void);
 MEM MemLast(MEM memory);
 
 /**
- * @brief Add a variable to an existing memory
+ * @brief Add a variable to an existing memory (free value if memory is NULL or if MemPush fail)
  *
  * @param memory
  * @param name
@@ -81,7 +81,7 @@ MEM MemPushf(MEM memory, char *name, AST body);
 MEM MemGet(MEM memory, char *name);
 
 /**
- * @brief Update a variable
+ * @brief Update a variable (free value if memory is NULL)
  *
  * @param memory
  * @param name
@@ -89,6 +89,12 @@ MEM MemGet(MEM memory, char *name);
  */
 MEM MemSet(MEM memory, char *value);
 
+/**
+ * @brief Display all variables
+ *
+ * @param memory
+ */
+void MemLog(MEM memory);
 
 /**
  * @brief Join 2 memories
@@ -97,5 +103,12 @@ MEM MemSet(MEM memory, char *value);
  * @param from
  */
 void MemJoin(MEM to, MEM from);
+
+/**
+ * @brief Free the allocated memory
+ *
+ * @param memory
+ */
+void MemFree(MEM memory);
 
 #endif /* __SOARE_MEMORY_H__ */

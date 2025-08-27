@@ -34,9 +34,9 @@ static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     /* AZERTY */
     {
         //
-        0, 0, '&', '<', '"', '\'', '(', '-', '>', '_', 0, '@', ')', '=', '\b',
+        0, 0, '&', '<', '"', '\'', '(', '-', '>', '_', ']', '@', ')', '=', '\b',
         '\t', 'a', 'z', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '^', '$', '\n',
-        0, 'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 0, 0,
+        0, 'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm', '[', 0,
         0, '*', 'w', 'x', 'c', 'v', 'b', 'n', ',', ';', ':', '!', 0, 0, 0, ' '
         //
     }
@@ -51,7 +51,7 @@ static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
         0, '~', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '+', '\b',
         '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', '\n',
         0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', 0,
-        0, 0, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, 0, 0, ' '
+        0, '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, 0, 0, ' '
         //
     },
     /* AZERTY */
@@ -60,11 +60,24 @@ static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
         0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0, '+', '\b',
         '\t', 'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0, '*', '\n',
         0, 'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', '%', 0,
-        0, 0, 'W', 'X', 'C', 'V', 'B', 'N', '?', '.', '/', 0, 0, 0, 0, ' '
+        0, '\\', 'W', 'X', 'C', 'V', 'B', 'N', '?', '.', '/', 0, 0, 0, 0, ' '
         //
     }
     //
 };
+
+/**
+ * @brief Input byte
+ * 
+ * @param port 
+ * @return unsigned char 
+ */
+unsigned char inb(unsigned short port)
+{
+    unsigned char data;
+    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
+    return data;
+}
 
 /**
  * @brief Initialize keyboard
@@ -76,13 +89,13 @@ void KEYBOARD_INIT(KEYBOARD_LAYOUT _Keyboard)
     keyboard = _Keyboard;
 }
 
-static inline uint8_t inb(uint8_t port)
-{
-    uint8_t data;
-    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
-    return data;
-}
-
+/**
+ * @brief Get ascii char
+ * 
+ * @param keycode 
+ * @param shift_pressed 
+ * @return char 
+ */
 static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
 {
     if (keycode >= sizeof(KEYBOARDS[keyboard]))
@@ -90,11 +103,23 @@ static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
     return shift_pressed ? SHIFTED_KEYBOARDS[keyboard][keycode] : KEYBOARDS[keyboard][keycode];
 }
 
+/**
+ * @brief Is shift key ?
+ * 
+ * @param keycode 
+ * @return uint8_t 
+ */
 static inline uint8_t is_shift_key(uint8_t keycode)
 {
     return keycode == 0x2A || keycode == 0x36;
 }
 
+/**
+ * @brief Is shift key release ?
+ * 
+ * @param keycode 
+ * @return uint8_t 
+ */
 static inline uint8_t is_shift_release(uint8_t keycode)
 {
     return keycode == 0xAA || keycode == 0xB6;
@@ -107,33 +132,34 @@ static inline uint8_t is_shift_release(uint8_t keycode)
  */
 char GETC()
 {
-    char c = 0;
-    uint8_t shift_pressed = 0;
+    static uint8_t shifted = 0;
 
-    while (!c)
+    char character = 0;
+
+    while (!character)
     {
         uint8_t keycode = inb(KEYBOARD_PORT);
 
         if (is_shift_key(keycode))
         {
-            shift_pressed = 1;
+            shifted = 1;
             continue;
         }
 
         if (is_shift_release(keycode))
         {
-            shift_pressed = 0;
+            shifted = 0;
             continue;
         }
 
-        c = ascii_char(keycode, shift_pressed);
+        character = ascii_char(keycode, shifted);
 
         // Wait for key release
         while (inb(KEYBOARD_PORT) == keycode)
             /* pass */;
     }
 
-    return c;
+    return character;
 }
 
 /**
@@ -186,5 +212,6 @@ void GETS(char *dest, long unsigned int size)
         dest++;
     }
 
+    *dest = 0;
     PUTC('\n');
 }

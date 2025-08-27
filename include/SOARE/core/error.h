@@ -74,9 +74,9 @@ char ErrorLevel(void);
  * @param file
  * @return void* (always returns NULL)
  */
-void *LeaveException(SoareExceptions error, char *string);
+void *LeaveException(SoareExceptions error, char *string, Document file);
 
 /* Alias when memory allocation failed. Out of memory */
-#define __SOARE_OUT_OF_MEMORY() LeaveException(InterpreterError, "OUT OF MEMORY")
+#define __SOARE_OUT_OF_MEMORY() LeaveException(InterpreterError, "OUT OF MEMORY", EmptyDocument())
 
 #endif /* __SOARE_ERROR_H__ */

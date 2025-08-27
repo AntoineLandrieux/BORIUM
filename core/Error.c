@@ -1,6 +1,8 @@
-#include <DRIVER/video.h>
-
 #include <STD/stdlib.h>
+#include <STD/stdarg.h>
+
+#include <DRIVER/keyboard.h>
+#include <DRIVER/video.h>
 
 /**
  *  _____  _____  ___  ______ _____
@@ -21,7 +23,7 @@
 static unsigned char enable = 1;
 
 /* Error level */
-static char errorlevel = 0;
+static char errorlevel = EXIT_SUCCESS;
 
 /* Exceptions */
 static char *Exceptions[] = {
@@ -69,7 +71,7 @@ void IgnoreException(unsigned char ignore)
  */
 void ClearException(void)
 {
-    errorlevel = 0;
+    errorlevel = EXIT_SUCCESS;
 }
 
 /**
@@ -91,16 +93,29 @@ char ErrorLevel(void)
  * @param file
  * @return void* (always returns NULL)
  */
-void *LeaveException(SoareExceptions error, char *string)
+void *LeaveException(SoareExceptions error, char *string, Document file)
 {
     // If the errors are disabled, nothing is displayed
     if (enable)
     {
+        char col[200], ln[200];
+
+        itoa(ln, sizeof(ln), (int)file.ln);
+        itoa(col, sizeof(col), (int)file.col);
+
         CPUTS("Except: ", 0xC);
         CPUTS(Exceptions[error], 0xC);
         CPUTS("\n        \"", 0xC);
         CPUTS(string, 0xC);
         CPUTS("\"\n         ^~~~\n", 0xC);
+        CPUTS("        At file: ", 0xC);
+        CPUTS(file.file, 0xC);
+        CPUTC(':', 0xC);
+        CPUTS(ln, 0xC);
+        CPUTC(':', 0xC);
+        CPUTS(col, 0xC);
+
+        PUTC('\n');
     }
 
     // set error at level 1

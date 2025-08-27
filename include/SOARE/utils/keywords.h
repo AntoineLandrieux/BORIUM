@@ -20,6 +20,13 @@
  * List of keywords (alpha-numeric order)
  */
 
+
+/**
+ * 
+ *  SOARE KEYWORD
+ * 
+ */
+
 #define KEYWORD_BREAK       "break"
 #define KEYWORD_DO          "do"
 #define KEYWORD_ELSE        "else"
@@ -29,11 +36,29 @@
 #define KEYWORD_IFERROR     "iferror"
 #define KEYWORD_INPUT       "input"
 #define KEYWORD_LET         "let"
+#define KEYWORD_LOADIMPORT  "loadimport"
 #define KEYWORD_OR          "or"
 #define KEYWORD_RAISE       "raise"
 #define KEYWORD_RETURN      "return"
 #define KEYWORD_TRY         "try"
 #define KEYWORD_WHILE       "while"
 #define KEYWORD_WRITE       "write"
+
+/**
+ * 
+ *  BORIUM KEYWORD
+ * 
+ */
+
+#define KEYWORD_BORIUM_CLEAR    "clear"
+#define KEYWORD_BORIUM_COLOR    "color"
+#define KEYWORD_BORIUM_CURSOR   "cursor"
+#define KEYWORD_BORIUM_EDITOR   "editor"
+#define KEYWORD_BORIUM_GETC     "getc"
+#define KEYWORD_BORIUM_HELP     "help"
+#define KEYWORD_BORIUM_LICENSE  "license"
+#define KEYWORD_BORIUM_PAUSE    "pause"
+#define KEYWORD_BORIUM_SETUP    "setup"
+#define KEYWORD_BORIUM_SLEEP    "sleep"
 
 #endif /* __SOARE_KEYWORDS_H__ */

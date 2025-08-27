@@ -38,6 +38,11 @@
 /* SOARE max input */
 #define __SOARE_MAX_INPUT__ 70
 
+/* Output */
+#define soare_write PUTS
+/* Input */
+#define soare_input(__buffer) GETS(__buffer, __SOARE_MAX_INPUT__);
+
 #ifdef __cplusplus
 /**
  * SOARE namespace
@@ -48,7 +53,24 @@ namespace SOARE
     {
 #endif /* __cplusplus */
 
+        /**
+         * @brief Structure of a document
+         */
+        typedef struct Document
+        {
+
+            // File
+            char *file;
+
+            // Line
+            unsigned long long ln;
+            // Column
+            unsigned long long col;
+
+        } Document;
+
 #include "utils/keywords.h"
+#include "utils/platform.h"
 
 #include "core/error.h"
 #include "core/tokenizer.h"

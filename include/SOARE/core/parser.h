@@ -22,10 +22,17 @@
 typedef enum node_type
 {
 
+    /**
+     *
+     * SOARE
+     *
+     */
+
     NODE_ROOT,
     NODE_TRY,
     NODE_BODY,
     NODE_RAISE,
+    NODE_ARRAY,
     NODE_OUTPUT,
     NODE_VALUE,
     NODE_IMPORT,
@@ -42,7 +49,24 @@ typedef enum node_type
     NODE_REPETITION,
     NODE_BREAK,
     NODE_SHELL,
-    NODE_RETURN
+    NODE_RETURN,
+
+    /**
+     *
+     * BORIUM
+     *
+     */
+
+    NODE_BORIUM_CLEAR,
+    NODE_BORIUM_COLOR,
+    NODE_BORIUM_CURSOR,
+    NODE_BORIUM_EDITOR,
+    NODE_BORIUM_GETC,
+    NODE_BORIUM_HELP,
+    NODE_BORIUM_LICENSE,
+    NODE_BORIUM_PAUSE,
+    NODE_BORIUM_SETUP,
+    NODE_BORIUM_SLEEP
 
 } node_type;
 
@@ -56,6 +80,9 @@ typedef struct node
     char *value;
     // Type
     node_type type;
+
+    // Document
+    Document file;
 
     // Node Parent
     struct node *parent;
@@ -74,7 +101,7 @@ typedef struct node
  * @param file
  * @return Node*
  */
-Node *Branch(char *value, node_type type);
+Node *Branch(char *value, node_type type, Document file);
 
 /**
  * @brief Add a sibling branch
@@ -93,6 +120,20 @@ AST BranchJuxtapose(Node *source, AST element);
  * @return AST
  */
 AST BranchJoin(Node *parent, Node *child);
+
+/**
+ * @brief Frees the memory allocated by a tree
+ *
+ * @param tree
+ */
+void TreeFree(AST tree);
+
+/**
+ * @brief Display a tree
+ *
+ * @param tree
+ */
+void TreeLog(AST tree);
 
 /**
  * @brief Turns a sequence of tokens into a tree (AST)

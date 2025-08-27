@@ -29,6 +29,6 @@ char *RunFunction(AST tree);
  *
  * @param rawcode
  */
-int Execute(char *rawcode);
+int Execute(char *__restrict__ file, char *__restrict__ rawcode);
 
 #endif /* __SOARE_RUNTIME_H__ */

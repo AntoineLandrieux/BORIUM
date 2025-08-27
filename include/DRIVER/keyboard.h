@@ -31,6 +31,14 @@ typedef enum keyboard_layout
 } KEYBOARD_LAYOUT;
 
 /**
+ * @brief Input byte
+ * 
+ * @param port 
+ * @return unsigned char 
+ */
+unsigned char inb(unsigned short port);
+
+/**
  * @brief Initialize keyboard
  *
  * @param _Keyboard

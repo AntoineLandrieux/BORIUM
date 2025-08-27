@@ -1,6 +1,8 @@
 #ifndef __SOARE_MATH_H__
 #define __SOARE_MATH_H__ 0x1
 
+/* #pragma once */
+
 /**
  *  _____  _____  ___  ______ _____
  * /  ___||  _  |/ _ \ | ___ \  ___|
@@ -15,16 +17,7 @@
  */
 
 /**
- * @brief Duplicate a string
- *
- * @param value
- * @return char*
- */
-char *vardup(char *string);
-
-/**
  * @brief Return the value as a node
- * @author Antoine LANDRIEUX
  *
  * @param tokens
  * @return AST
@@ -33,13 +26,21 @@ AST ParseValue(Tokens **tokens);
 
 /**
  * @brief Build a math tree
- * @author Antoine LANDRIEUX
  *
  * @param tokens
- * @param priority 
+ * @param priority
  * @return AST
  */
 AST ParseExpr(Tokens **tokens, unsigned char priority);
+
+/**
+ * @brief Get the Array Index object
+ *
+ * @param array
+ * @param size
+ * @return long long
+ */
+long long GetArrayIndex(AST array, size_t size);
 
 /**
  * @brief Evaluates the mathematical expression of a tree
@@ -47,6 +48,6 @@ AST ParseExpr(Tokens **tokens, unsigned char priority);
  * @param tree
  * @return char*
  */
-char *Math(AST tree);
+char *Eval(AST tree);
 
 #endif /* __SOARE_MATH_H__ */

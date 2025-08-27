@@ -10,8 +10,12 @@
 > Here we will use a Linux environment.
 
 ```sh
-apt-get update && apt-get upgrade -y
-sudo apt-get install nasm binutils build-essential qemu-system make -y
+sudo apt update && sudo apt upgrade -y
+sudo apt install nasm binutils build-essential grub-common grub-pc-bin xorriso make -y
+
+# Test it using Qemu !
+
+sudo apt install qemu-system 
 ```
 
 ### COMPILE AND RUN

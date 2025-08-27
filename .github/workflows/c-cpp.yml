@@ -1,0 +1,27 @@
+name: Build BORIUM
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: sudo apt-get install nasm binutils build-essential grub-common grub-pc-bin xorriso make -y
+
+      - name: Build project
+        run: make
+
+      - name: Upload iso artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: borium-iso
+          path: borium.iso

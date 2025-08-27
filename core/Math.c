@@ -1,6 +1,8 @@
-#include <DRIVER/video.h>
-
 #include <STD/stdlib.h>
+#include <STD/stdarg.h>
+
+#include <DRIVER/keyboard.h>
+#include <DRIVER/video.h>
 
 /**
  *  _____  _____  ___  ______ _____
@@ -61,12 +63,11 @@ static unsigned char isNaN(char *string)
  * @param value
  * @return char*
  */
-char *vardup(char *string)
+static char *vardup(char *string)
 {
-    char *result = malloc(strlen(string) + 1);
+    char *result = strdup(string);
     if (!result)
         return __SOARE_OUT_OF_MEMORY();
-    strcat(result, string);
     return result;
 }
 
@@ -78,9 +79,21 @@ char *vardup(char *string)
  */
 static char *__int(int number)
 {
-    char string[150] = {0};
-    itoa(string, sizeof(string), number);
-    return vardup(string);
+    // Convert double to string
+    char string[100] = {0};
+    // Duplicate string
+    return vardup(itoa(string, sizeof(string), number));
+}
+
+/**
+ * @brief Convert float to string
+ *
+ * @param number
+ * @return char*
+ */
+static char *__float(double number)
+{
+    return __int((int)number);
 }
 
 /**
@@ -119,6 +132,45 @@ static unsigned char MathPriority(char symbol)
 }
 
 /**
+ * @brief Return the value as an array
+ *
+ * @param tokens
+ * @return AST
+ */
+static AST ParseArray(Tokens **tokens)
+{
+    /**
+     *
+     * Example:
+     *
+     * tokens: ["["]->["1"]->["+"]->["2"]->["]"]
+     * returns:
+     *
+     *  (ARRAY)
+     *     |
+     *    (+)
+     *    /
+     *  (1)-(2)
+     *
+     */
+
+    if ((*tokens)->type != TKN_ARRAYL)
+        return NULL;
+
+    __tokens_next();
+    AST value = ParseExpr(tokens, 0xF);
+
+    if ((*tokens)->type != TKN_ARRAYR)
+    {
+        TreeFree(value);
+        return NULL;
+    }
+
+    __tokens_next();
+    return BranchJoin(Branch("ARRAY", NODE_ARRAY, (*tokens)->file), value);
+}
+
+/**
  * @brief Return the value as a node
  *
  * @param tokens
@@ -126,7 +178,7 @@ static unsigned char MathPriority(char symbol)
  */
 AST ParseValue(Tokens **tokens)
 {
-    Node *value = Branch((*tokens)->value, NODE_ROOT);
+    Node *value = Branch((*tokens)->value, NODE_ROOT, (*tokens)->file);
     Tokens *old = *tokens;
 
     __tokens_next();
@@ -152,7 +204,10 @@ AST ParseValue(Tokens **tokens)
         while ((*tokens)->type != TKN_PARENR)
         {
             if (!(expr = ParseExpr(tokens, 0xF)))
+            {
+                TreeFree(value);
                 return NULL;
+            }
 
             BranchJoin(value, expr);
 
@@ -163,16 +218,21 @@ AST ParseValue(Tokens **tokens)
         }
 
         if ((*tokens)->type != TKN_PARENR)
+        {
+            TreeFree(value);
             return NULL;
+        }
 
         __tokens_next();
         break;
 
     default:
 
+        TreeFree(value);
         return NULL;
     }
 
+    BranchJoin(value, ParseArray(tokens));
     return value;
 }
 
@@ -216,12 +276,17 @@ AST ParseExpr(Tokens **tokens, unsigned char priority)
         if (op >= priority)
             break;
 
-        symbol = Branch((*tokens)->value, NODE_OPERATOR);
+        symbol = Branch((*tokens)->value, NODE_OPERATOR, (*tokens)->file);
         __tokens_next();
         y = ParseExpr(tokens, op);
 
         if (!symbol || !y)
+        {
+            TreeFree(x);
+            TreeFree(y);
+            TreeFree(symbol);
             return NULL;
+        }
 
         BranchJoin(symbol, x);
         BranchJoin(symbol, y);
@@ -232,14 +297,81 @@ AST ParseExpr(Tokens **tokens, unsigned char priority)
 }
 
 /**
- * @brief Evaluate the mathematical expression of a tree
+ * @brief Get the Array Index object
+ *
+ * @param array
+ * @param size
+ * @return long long
+ */
+long long GetArrayIndex(AST array, size_t size)
+{
+    while (array)
+        if (array->type != NODE_ARRAY)
+            array = array->sibling;
+        else
+            break;
+
+    if (!array)
+        return -1;
+
+    char *index = Eval(array->child);
+
+    if (!index)
+        return -1;
+
+    int indexlld = atoi(index);
+    indexlld = indexlld < 0 ? (int)size + indexlld : indexlld;
+    free(index);
+
+    if (size <= (size_t)indexlld || indexlld < 0)
+    {
+        LeaveException(IndexOutOfRange, array->value, array->file);
+        return -1;
+    }
+
+    return indexlld;
+}
+
+/**
+ * @brief Array parser
+ *
+ * @param value
+ * @param array
+ * @return char*
+ */
+static char *Array(char *value, AST array)
+{
+    if (!value || !array)
+        return value;
+
+    long long index = GetArrayIndex(array, strlen(value));
+    char *result = NULL;
+
+    if (index < 0)
+        return value;
+
+    if (!(result = malloc(2)))
+    {
+        free(value);
+        return __SOARE_OUT_OF_MEMORY();
+    }
+
+    0 [result] = value[index];
+    1 [result] = 0;
+
+    free(value);
+    return result;
+}
+
+/**
+ * @brief Evaluates the mathematical expression of a tree
  *
  * @param tree
  * @return char*
  */
 char *Math(AST tree)
 {
-    int x, y;
+    int dx, dy;
     char *sx, *sy;
     char *result = NULL;
 
@@ -252,10 +384,10 @@ char *Math(AST tree)
         get = MemGet(MEMORY, tree->value);
 
         if (!get)
-            return LeaveException(UndefinedReference, tree->value);
+            return LeaveException(UndefinedReference, tree->value, tree->file);
 
         if (get->body)
-            return LeaveException(VariableDefinedAsFunction, tree->value);
+            return LeaveException(VariableDefinedAsFunction, tree->value, tree->file);
 
         return vardup(get->value);
 
@@ -269,11 +401,15 @@ char *Math(AST tree)
 
     case NODE_OPERATOR:
 
-        sx = Math(tree->child);
-        sy = Math(tree->child->sibling);
+        sx = Eval(tree->child);
+        sy = Eval(tree->child->sibling);
 
         if (!sx || !sy)
+        {
+            free(sx);
+            free(sy);
             return NULL;
+        }
 
         if (*(tree->value) == ',')
         {
@@ -282,6 +418,8 @@ char *Math(AST tree)
 
             strcat(result, sx);
             strcat(result, sy);
+            free(sx);
+            free(sy);
             return result;
         }
 
@@ -291,70 +429,102 @@ char *Math(AST tree)
             {
             case '=':
                 result = __boolean(!strcmp(sx, sy));
+                free(sx);
+                free(sy);
                 return result;
 
             case '~':
             case '!':
                 result = __boolean(strcmp(sx, sy));
+                free(sx);
+                free(sy);
                 return result;
 
             default:
-                return LeaveException(MathError, tree->value);
+                free(sx);
+                free(sy);
+                return LeaveException(MathError, tree->value, tree->file);
             }
         }
 
-        x = atoi(sx);
-        y = atoi(sy);
+        dx = atoi(sx);
+        dy = atoi(sy);
+        free(sx);
+        free(sy);
 
-        if ((*(tree->value) == '/' || *(tree->value) == '%') && !y)
-            return LeaveException(DivideByZero, tree->value);
+        if ((*(tree->value) == '/' || *(tree->value) == '%') && !dy)
+            return LeaveException(DivideByZero, tree->value, tree->file);
 
         switch (*(tree->value))
         {
         case '~':
         case '!':
-            return __boolean(x != y);
+            return __boolean(dx != dy);
 
         case '=':
-            return __boolean(x == y);
+            return __boolean(dx == dy);
 
         case '&':
-            return __boolean(x && y);
+            return __boolean(dx && dy);
 
         case '|':
-            return __boolean(x || y);
+            return __boolean(dx || dy);
 
         case '^':
-            return __int((int)x ^ (int)y);
+            return __int((int)dx ^ (int)dy);
 
         case '%':
-            return __int((int)x % (int)y);
+            return __int((int)dx % (int)dy);
 
         case '*':
-            return __int(x * y);
+            return __float(dx * dy);
 
         case '/':
-            return __int(x / y);
+            return __float(dx / dy);
 
         case '+':
-            return __int(x + y);
+            return __float(dx + dy);
 
         case '-':
-            return __int(x - y);
+            return __float(dx - dy);
 
         case '<':
-            return __boolean(x < y || (x == y && tree->value[1] == '='));
+            return __float(dx < dy || (dx == dy && tree->value[1] == '='));
 
         case '>':
-            return __boolean(x > y || (x == y && tree->value[1] == '='));
+            return __float(dx > dy || (dx == dy && tree->value[1] == '='));
 
         default:
-            return LeaveException(MathError, tree->value);
+            return LeaveException(MathError, tree->value, tree->file);
         }
 
     default:
-        return LeaveException(MathError, tree->value);
+        return LeaveException(MathError, tree->value, tree->file);
     }
 
     return NULL;
+}
+
+/**
+ * @brief Evaluates the mathematical expression of a tree
+ *
+ * @param tree
+ * @return char*
+ */
+char *Eval(AST tree)
+{
+    char *string = NULL;
+
+    if (tree)
+    {
+        string = Array(Math(tree), tree->child);
+
+        if (ErrorLevel())
+        {
+            free(string);
+            return NULL;
+        }
+    }
+
+    return string;
 }

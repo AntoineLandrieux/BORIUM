@@ -8,7 +8,7 @@
 # MIT License
 #
 
-OUT = borium.bin
+OUT = borium.iso
 
 LD = ld
 CC = gcc
@@ -26,10 +26,9 @@ LINKER_SCRIPT = script/linker.ld
 
 CFLAGS = -Wall -Wextra -ffreestanding -m32 -fno-pie -fno-stack-protector -O1 -Wno-implicit-fallthrough
 
-default:
+default: clean
 	mkdir -p bin
 	#
-	$(NASM) $(BOOT)/boot.asm -f bin -o $(BIN)/boot.bin
 	$(NASM) $(BOOT)/entry.asm -f elf -o $(BIN)/entry.o
 	#
 	$(CC) $(CFLAGS) -c $(KERNEL)/kernel.c -o $(BIN)/kernel.o -I $(INCLUDE)
@@ -46,11 +45,13 @@ default:
 	$(CC) $(CFLAGS) -c $(CORE)/Runtime.c -o $(BIN)/Runtime.o -I $(INCLUDE)
 	$(CC) $(CFLAGS) -c $(CORE)/Tokenizer.c -o $(BIN)/Tokenizer.o -I $(INCLUDE)
 	#
-	$(LD) -m elf_i386 -T $(LINKER_SCRIPT) -o $(BIN)/kernel.bin $(BIN)/entry.o $(BIN)/kernel.o $(BIN)/dvideo.o $(BIN)/dkeyboard.o $(BIN)/stdlib.o $(BIN)/Error.o $(BIN)/Math.o $(BIN)/Memory.o $(BIN)/Parser.o $(BIN)/Runtime.o $(BIN)/Tokenizer.o --oformat binary
-	(cat $(BIN)/boot.bin ; cat $(BIN)/kernel.bin) > $(BIN)/$(OUT)
+	$(LD) -m elf_i386 -T $(LINKER_SCRIPT) -o iso/boot/borium.elf $(BIN)/entry.o $(BIN)/kernel.o $(BIN)/dvideo.o $(BIN)/dkeyboard.o $(BIN)/stdlib.o $(BIN)/Error.o $(BIN)/Math.o $(BIN)/Memory.o $(BIN)/Parser.o $(BIN)/Runtime.o $(BIN)/Tokenizer.o
+	#
+	grub-mkrescue -o $(OUT) iso
 
 run:
-	qemu-system-x86_64 $(BIN)/$(OUT)
+	qemu-system-x86_64 -cdrom $(OUT)
 
 clean:
 	rm -drf $(BIN)
+	rm -drf $(OUT)

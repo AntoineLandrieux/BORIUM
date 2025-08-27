@@ -28,6 +28,8 @@ typedef enum token_type
     TKN_STRING,
     TKN_PARENL,
     TKN_PARENR,
+    TKN_ARRAYL,
+    TKN_ARRAYR,
     TKN_ASSIGN,
     TKN_KEYWORD,
     TKN_OPERATOR,
@@ -45,6 +47,9 @@ typedef struct Tokens
     char *value;
     // Type
     token_type type;
+
+    // Document
+    Document file;
 
     // Next
     struct Tokens *next;
@@ -66,6 +71,13 @@ void SetEnvironment(char *path);
 char *GetEnvironment(void);
 
 /**
+ * @brief Return an empty document
+ *
+ * @return Document
+ */
+Document EmptyDocument(void);
+
+/**
  * @brief Create a new token
  *
  * @param filename
@@ -73,7 +85,7 @@ char *GetEnvironment(void);
  * @param type
  * @return Tokens*
  */
-Tokens *Token(char *value, token_type type);
+Tokens *Token(char *__restrict__ filename, char *__restrict__ value, token_type type);
 
 /**
  * @brief Move on to the next token
@@ -94,12 +106,26 @@ void TokenNext(Tokens **tokens, unsigned int step);
 unsigned char TokensFollowPattern(Tokens *tokens, unsigned int iteration, ...);
 
 /**
+ * @brief Free the memory allocated by the tokens
+ *
+ * @param token
+ */
+void TokensFree(Tokens *token);
+
+/**
+ * @brief Display the tokens
+ *
+ * @param token
+ */
+void TokensLog(Tokens *token);
+
+/**
  * @brief Transform a string into a sequence of tokens
  *
  * @param filename
  * @param text
  * @return Tokens*
  */
-Tokens *Tokenizer(char *text);
+Tokens *Tokenizer(char *__restrict__ filename, char *__restrict__ text);
 
 #endif /* __SOARE_TOKENIZER_H__ */

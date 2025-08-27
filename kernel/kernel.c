@@ -77,16 +77,18 @@ void EDITOR(void)
         //
     );
 
+    unsigned char color = (GET_GLOBAL_COLOR() >> 4) | (GET_GLOBAL_COLOR() << 4);
+
     for (unsigned short i = 0; i < __MAX_LINE_EDITOR__; i++)
     {
         char lines[3] = {0, 0, 0};
 
         if ((i + 1) < 10)
-            PUTC('0');
+            CPUTC('0', color);
 
         itoa(lines, sizeof(lines), (i + 1));
-        PUTS(lines);
-        PUTS(". ");
+        CPUTS(lines, color);
+        CPUTS(". ", color);
 
         GETS(user, sizeof(user));
         strcat(file, user);
@@ -194,7 +196,6 @@ static unsigned char THEME_SELECTOR(void)
     UPDATE_AND_MOVE_CURSOR(0);
     uint16_t cursor = GET_CURSOR();
 
-    
     while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
         /* pass */;
 
@@ -347,7 +348,6 @@ void SETUP()
  */
 void start()
 {
-
     SCREEN_CLEAR();
 
     running = 1;

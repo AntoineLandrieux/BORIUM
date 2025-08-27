@@ -51,7 +51,7 @@ void *memmove(void *destination, const void *source, size_t size);
  * @param string
  * @return char*
  */
-char *strdup(char *string);
+char *strdup(const char *string);
 
 /**
  * @brief Compare string
@@ -120,7 +120,7 @@ char *itoa(char *buff, int size, int value);
  * @param dest
  * @param string
  */
-void strcat(char *dest, char *string);
+void strcat(char *dest, const char *string);
 
 /**
  * @brief Copy string
@@ -128,6 +128,6 @@ void strcat(char *dest, char *string);
  * @param dest
  * @param string
  */
-void strcpy(char *dest, char *string);
+void strcpy(char *dest, const char *string);
 
 #endif /* __STDLIB_H__ */

@@ -2,7 +2,7 @@
 #include <STD/stdlib.h>
 #include <STD/stdint.h>
 
-#define __MEMORY_POOL_SIZE__ 0x80000
+#define __MEMORY_POOL_SIZE__ 0x8FFFF
 
 static char memory[__MEMORY_POOL_SIZE__];
 static char *mfree = memory;
@@ -52,12 +52,13 @@ void free_all()
  * @param string
  * @return char*
  */
-char *strdup(char *string)
+char *strdup(const char *string)
 {
     if (!string)
         return NULL;
     char *result = (char *)malloc(strlen(string) + 1);
-    strcat(result, string);
+    if (result)
+        strcpy(result, string);
     return result;
 }
 
@@ -274,17 +275,13 @@ char *itoa(char *buff, int size, int value)
  * @param dest
  * @param string
  */
-void strcat(char *dest, char *string)
+void strcat(char *dest, const char *string)
 {
-    unsigned long long i = 0;
-    for (; dest[i]; i++)
-        ;
-    for (; *string; (volatile char *)string++)
-    {
-        dest[i] = *string;
-        i++;
-    }
-    dest[i] = 0;
+    while (*dest)
+        dest++;
+    while (*string)
+        *dest++ = *string++;
+    *dest = 0;
 }
 
 /**
@@ -293,7 +290,7 @@ void strcat(char *dest, char *string)
  * @param dest
  * @param string
  */
-void strcpy(char *dest, char *string)
+void strcpy(char *dest, const char *string)
 {
     unsigned long long i = 0;
     for (; string[i]; i++)

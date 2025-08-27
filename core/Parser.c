@@ -320,7 +320,7 @@ AST Parse(Tokens *tokens)
                     return LeaveException(ValueError, old->value, old->file);
                 }
 
-                BranchJoin(curr, Branch(NULL, NODE_BORIUM_GETC, old->file));
+                BranchJoin(curr, Branch(tokens->value, NODE_BORIUM_GETC, old->file));
                 tokens = tokens->next;
             }
 

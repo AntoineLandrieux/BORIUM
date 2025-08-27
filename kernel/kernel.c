@@ -123,6 +123,9 @@ static void KEYBOARD_SELECTOR(void)
     UPDATE_AND_MOVE_CURSOR(0);
     uint16_t cursor = GET_CURSOR();
 
+    while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
+        /* pass */;
+
     while (1)
     {
         PUTS("      \t 1) ");
@@ -190,6 +193,10 @@ static unsigned char THEME_SELECTOR(void)
     int8_t selected = 0;
     UPDATE_AND_MOVE_CURSOR(0);
     uint16_t cursor = GET_CURSOR();
+
+    
+    while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
+        /* pass */;
 
     while (1)
     {
@@ -312,9 +319,7 @@ void SETUP()
 
     KEYBOARD_SELECTOR();
     USER_SELECTOR();
-
     unsigned char theme = THEME_SELECTOR();
-
     CPUTS("\n All Ok ? [Y/N] ", 0xF0);
 
     while (1)

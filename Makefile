@@ -15,7 +15,7 @@ CC = gcc
 NASM = nasm
 
 BIN = bin
-STD = std
+STD = STD
 CORE = core
 BOOT = boot
 KERNEL = kernel

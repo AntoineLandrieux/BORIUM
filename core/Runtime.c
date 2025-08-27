@@ -176,7 +176,7 @@ static char *Runtime(AST tree)
         case NODE_BORIUM_GETC:
             if ((get = MemGet(MEMORY, curr->value)))
             {
-                if ((returned = malloc(2)))
+                if (!(returned = malloc(2)))
                     return __SOARE_OUT_OF_MEMORY();
                 returned[0] = GETC();
                 returned[1] = 0;

@@ -88,7 +88,8 @@ void EDITOR(void)
 
         itoa(lines, sizeof(lines), (i + 1));
         CPUTS(lines, color);
-        CPUTS(". ", color);
+        CPUTC('.', color);
+        PUTC(' ');
 
         GETS(user, sizeof(user));
         strcat(file, user);
@@ -102,6 +103,7 @@ void EDITOR(void)
 
     PUTC('\n');
     Execute("editor", file);
+    free_all();
 }
 
 static void USAGE_SELECTOR(void)

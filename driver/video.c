@@ -16,36 +16,44 @@
  *
  */
 
-// Video memory address pointer
+// Tracks the current position in video memory for text output
 static uint16_t VGA_POINTER = 0;
 
-// Global color
+// Stores the current global text color
 static uint8_t GLOBAL_COLOR = 0x0F;
 
-// Move cursor
+// Indicates if the cursor should be updated after output
 static uint8_t MOVE_CURSOR = 0x1;
 
-// Text blink
+// Controls text blinking (attribute mask)
 static uint8_t BLINK = 0x7F;
 
 /**
- * @brief Outb
+ * @brief Low-Level Output
  *
  * @param port
  * @param value
  */
 void outb(unsigned short port, unsigned char value)
 {
+    // Writes a byte to a hardware port
+    // (used for VGA register access).
     __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
 /**
- * @brief Move the VGA cursor
+ *
+ * Cursor Management
+ *
+ */
+
+/**
+ * @brief Updates the hardware VGA cursor position based on VGA_POINTER
  *
  * @param row
  * @param col
  */
-void update_cursor_location()
+static void update_cursor_location(void)
 {
     if (!MOVE_CURSOR)
         return;
@@ -60,26 +68,44 @@ void update_cursor_location()
 }
 
 /**
- * @brief If move cursor
+ * @brief Enables or disables automatic cursor movement
  *
- * @param move_cursor
+ * @param enable
  */
-void UPDATE_AND_MOVE_CURSOR(unsigned char move_cursor)
+void UPDATE_AND_MOVE_CURSOR(unsigned char enable)
 {
-    MOVE_CURSOR = move_cursor;
+    MOVE_CURSOR = enable;
 }
 
 /**
- * @brief Enable text blinking
+ * @brief Get cursor location
  *
+ * @return unsigned short
  */
-void TEXT_BLINKING(unsigned char enable)
+unsigned short GET_CURSOR()
 {
-    BLINK = enable ? 0xFF : 0x7F;
+    return (unsigned short)(VGA_POINTER / 2);
 }
 
 /**
- * @brief Place a pixel to the screen
+ * @brief Set cursor location
+ *
+ * @param cursor
+ */
+void SET_CURSOR(unsigned short cursor)
+{
+    VGA_POINTER = cursor * 2;
+    update_cursor_location();
+}
+
+/**
+ *
+ * Graphics Output
+ *
+ */
+
+/**
+ * @brief Draws a pixel at (x, y) in graphics mode with the specified color
  *
  * @param x
  * @param y
@@ -93,7 +119,7 @@ void PUT_PIXEL(unsigned short x, unsigned short y, unsigned char color)
 }
 
 /**
- * @brief Fill rectangle to the screen
+ * @brief Fills a rectangle in graphics mode with the specified color
  *
  * @param x
  * @param y
@@ -109,7 +135,43 @@ void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned sh
 }
 
 /**
- * @brief Scroll the screen
+ *
+ * Text Output Functions
+ *
+ */
+
+/**
+ * @brief Enables or disables text blinking by setting the BLINK mask
+ *
+ */
+void TEXT_BLINKING(unsigned char enable)
+{
+    BLINK = enable ? 0xFF : 0x7F;
+}
+
+/**
+ * @brief Clears the graphics and text screen
+ *
+ */
+void SCREEN_CLEAR()
+{
+    // Clears the graphics
+    FILL_RECT(0, 0, SCREEN_DRAW_WIDTH, SCREEN_DRAW_HEIGHT, 0x00);
+
+    // Clears the text screen
+    char *VIDEO = (char *)VGA_TEXT_ADDRESS;
+    VGA_POINTER = 0;
+
+    // Fills text attributes with the global color
+    for (uint16_t i = 0; i < (SCREEN_TEXT * 2); i++)
+        VIDEO[i] = i % 2 ? GLOBAL_COLOR : 0;
+
+    // Resets the cursor
+    update_cursor_location();
+}
+
+/**
+ * @brief Scrolls the text screen up by one line when the end of the screen is reached.
  *
  */
 static void SCREEN_TEXT_SCROLL()
@@ -201,28 +263,13 @@ void PUTS(const char *string)
 }
 
 /**
- * @brief Get cursor location
  *
- * @return unsigned short
+ * Color Control
+ *
  */
-unsigned short GET_CURSOR()
-{
-    return (unsigned short)(VGA_POINTER / 2);
-}
 
 /**
- * @brief Set cursor location
- *
- * @param cursor
- */
-void SET_CURSOR(unsigned short cursor)
-{
-    VGA_POINTER = cursor * 2;
-    update_cursor_location();
-}
-
-/**
- * @brief Set local console color
+ * @brief Sets the local color for text output
  *
  * @param color
  */
@@ -232,7 +279,7 @@ void SET_LOCAL_COLOR(unsigned char color)
 }
 
 /**
- * @brief Set global console color
+ * @brief Sets the global color and updates all text attributes on the screen
  *
  * @param color
  */
@@ -246,28 +293,11 @@ void SET_GLOBAL_COLOR(unsigned char color)
 }
 
 /**
- * @brief Get global console color
+ * @brief Returns the current global color.
  *
  * @param color
  */
 unsigned char GET_GLOBAL_COLOR(void)
 {
     return GLOBAL_COLOR;
-}
-
-/**
- * @brief Clear screen
- *
- */
-void SCREEN_CLEAR()
-{
-    FILL_RECT(0, 0, SCREEN_DRAW_WIDTH, SCREEN_DRAW_HEIGHT, 0x00);
-
-    char *VIDEO = (char *)VGA_TEXT_ADDRESS;
-    VGA_POINTER = 0;
-
-    for (uint16_t i = 0; i < (SCREEN_TEXT * 2); i++)
-        VIDEO[i] = i % 2 ? GLOBAL_COLOR : 0;
-
-    update_cursor_location();
 }

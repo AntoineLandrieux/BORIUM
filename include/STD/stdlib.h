@@ -30,12 +30,6 @@ void *malloc(size_t size);
 void free(void *ptr);
 
 /**
- * @brief Free allocated memory
- *
- */
-void free_all();
-
-/**
  * @brief Copy a block of memory from a location to another
  *
  * @param dest

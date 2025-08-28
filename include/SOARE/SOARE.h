@@ -25,13 +25,13 @@
 
 /**
  * SOARE version
- * 
+ *
  * R: release
  * A: alpha
  * B: beta
  * S: snapshot
  * T: testing
- * 
+ *
  */
 #define SOARE_VERSION "Rv1.1.1"
 

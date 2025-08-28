@@ -31,29 +31,29 @@ typedef enum keyboard_layout
 } KEYBOARD_LAYOUT;
 
 /**
- * @brief Input byte
- * 
- * @param port 
- * @return unsigned char 
+ * @brief Low-Level Port Input
+ *
+ * @param port
+ * @return unsigned char
  */
 unsigned char inb(unsigned short port);
 
 /**
- * @brief Initialize keyboard
+ * @brief Sets the current keyboard layout (QWERTY or AZERTY).
  *
  * @param _Keyboard
  */
 void KEYBOARD_INIT(KEYBOARD_LAYOUT _Keyboard);
 
 /**
- * @brief Get char
+ * @brief Single Character Input
  *
  * @return char
  */
-char GETC();
+char GETC(void);
 
 /**
- * @brief Get string
+ * @brief String Input
  *
  * @param dest
  * @param size

@@ -2,7 +2,7 @@
 #define __STDARG_H__ 0x1
 
 // Variable argument list
-typedef char* va_list;
+typedef char *va_list;
 
 // Variable argument list initialization
 #define va_start(va, arg) (va = (va_list)&arg + sizeof(arg))

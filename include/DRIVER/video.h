@@ -35,7 +35,7 @@
 #define SCREEN_TEXT (SCREEN_TEXT_HEIGHT * SCREEN_TEXT_WIDTH)
 
 /**
- * @brief Outb
+ * @brief Low-Level Output
  *
  * @param port
  * @param value
@@ -43,20 +43,40 @@
 void outb(unsigned short port, unsigned char value);
 
 /**
- * @brief If move cursor
  *
- * @param move_cursor
- */
-void UPDATE_AND_MOVE_CURSOR(unsigned char move_cursor);
-
-/**
- * @brief Enable text blinking
+ * Cursor Management
  *
  */
-void TEXT_BLINKING(unsigned char enable);
 
 /**
- * @brief Place a pixel to the screen
+ * @brief Enables or disables automatic cursor movement
+ *
+ * @param enable
+ */
+void UPDATE_AND_MOVE_CURSOR(unsigned char enable);
+
+/**
+ * @brief Get cursor location
+ *
+ * @return unsigned short
+ */
+unsigned short GET_CURSOR();
+
+/**
+ * @brief Set cursor location
+ *
+ * @param cursor
+ */
+void SET_CURSOR(unsigned short cursor);
+
+/**
+ *
+ * Graphics Output
+ *
+ */
+
+/**
+ * @brief Draws a pixel at (x, y) in graphics mode with the specified color
  *
  * @param x
  * @param y
@@ -65,7 +85,7 @@ void TEXT_BLINKING(unsigned char enable);
 void PUT_PIXEL(unsigned short x, unsigned short y, unsigned char color);
 
 /**
- * @brief Fill rectangle to the screen
+ * @brief Fills a rectangle in graphics mode with the specified color
  *
  * @param x
  * @param y
@@ -74,6 +94,24 @@ void PUT_PIXEL(unsigned short x, unsigned short y, unsigned char color);
  * @param color
  */
 void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned short h, unsigned char color);
+
+/**
+ *
+ * Text Output Functions
+ *
+ */
+
+/**
+ * @brief Enables or disables text blinking by setting the BLINK mask
+ *
+ */
+void TEXT_BLINKING(unsigned char enable);
+
+/**
+ * @brief Clears the graphics and text screen
+ *
+ */
+void SCREEN_CLEAR();
 
 /**
  * @brief Writes single character to stream output at current position (colored)
@@ -106,44 +144,30 @@ void PUTC(const char character);
 void PUTS(const char *string);
 
 /**
- * @brief Get cursor location
  *
- * @return unsigned short
+ * Color Control
+ *
  */
-unsigned short GET_CURSOR();
 
 /**
- * @brief Set cursor location
- *
- * @param cursor
- */
-void SET_CURSOR(unsigned short cursor);
-
-/**
- * @brief Set local console color
+ * @brief Sets the local color for text output
  *
  * @param color
  */
 void SET_LOCAL_COLOR(unsigned char color);
 
 /**
- * @brief Set global console color
+ * @brief Sets the global color and updates all text attributes on the screen
  *
  * @param color
  */
 void SET_GLOBAL_COLOR(unsigned char color);
 
 /**
- * @brief Get global console color
+ * @brief Returns the current global color.
  *
  * @param color
  */
 unsigned char GET_GLOBAL_COLOR(void);
-
-/**
- * @brief Clear screen
- *
- */
-void SCREEN_CLEAR();
 
 #endif /* __VIDEO_H__ */

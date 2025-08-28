@@ -25,22 +25,22 @@
 // Kernel version patch
 #define BORIUM_KERNEL_PATCH 0
 
-// Is the kernel running?
+// Indicates if the kernel main loop is running.
 extern unsigned char running;
 
-// Username
+// Stores the current username (max 20 chars).
 extern char USERNAME[20];
 
 /**
- * @brief Sleep miliseconds
- * 
- * @param ms 
+ * @brief Busy-wait loop to simulate a sleep/delay for a given number of milliseconds.
+ *
+ * @param ms (milliseconds)
  */
 void SLEEP(unsigned int ms);
 
 /**
- * @brief Text editor
- * 
+ * @brief Implements a simple line-based text editor
+ *
  */
 void EDITOR(void);
 
@@ -48,12 +48,12 @@ void EDITOR(void);
  * @brief Setup the kernel
  *
  */
-void SETUP();
+void SETUP(void);
 
 /**
  * @brief Start kernel
- * 
+ *
  */
-void start();
+void start(void);
 
 #endif /* __KERNEL_H__ */

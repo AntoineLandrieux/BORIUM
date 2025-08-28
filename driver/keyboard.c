@@ -18,9 +18,10 @@
  *
  */
 
-static KEYBOARD_LAYOUT keyboard = QUERTY;
+// Stores the current keyboard layout.
+static KEYBOARD_LAYOUT KEYBOARD = QUERTY;
 
-// Keyboard layout
+// Keyboard layout (Keymaps)
 static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     /* QWERTY */
     {
@@ -43,7 +44,7 @@ static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     //
 };
 
-// Keyboard layout (shifted)
+// Keyboard layout (Shifted Keymap)
 static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
     /* QWERTY */
     {
@@ -67,47 +68,51 @@ static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
 };
 
 /**
- * @brief Input byte
- * 
- * @param port 
- * @return unsigned char 
+ * @brief Low-Level Port Input
+ *
+ * @param port
+ * @return unsigned char
  */
 unsigned char inb(unsigned short port)
 {
+    // Reads a byte from the specified hardware port
+    // (used to get keyboard scancodes)
     unsigned char data;
     __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
     return data;
 }
 
 /**
- * @brief Initialize keyboard
+ * @brief Sets the current keyboard layout (QWERTY or AZERTY).
  *
- * @param _Keyboard
+ * @param keyboard
  */
-void KEYBOARD_INIT(KEYBOARD_LAYOUT _Keyboard)
+void KEYBOARD_INIT(KEYBOARD_LAYOUT keyboard)
 {
-    keyboard = _Keyboard;
+    KEYBOARD = keyboard;
 }
 
 /**
- * @brief Get ascii char
- * 
- * @param keycode 
- * @param shift_pressed 
- * @return char 
+ * @brief Keycode to ASCII Conversion
+ *
+ * @param keycode
+ * @param shift_pressed
+ * @return char
  */
 static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
 {
-    if (keycode >= sizeof(KEYBOARDS[keyboard]))
+    // Converts a keycode to its ASCII character,
+    // considering the current layout and shift state.
+    if (keycode >= sizeof(KEYBOARDS[KEYBOARD]))
         return 0;
-    return shift_pressed ? SHIFTED_KEYBOARDS[keyboard][keycode] : KEYBOARDS[keyboard][keycode];
+    return shift_pressed ? SHIFTED_KEYBOARDS[KEYBOARD][keycode] : KEYBOARDS[KEYBOARD][keycode];
 }
 
 /**
- * @brief Is shift key ?
- * 
- * @param keycode 
- * @return uint8_t 
+ * @brief Returns true if the keycode is a shift key press.
+ *
+ * @param keycode
+ * @return uint8_t
  */
 static inline uint8_t is_shift_key(uint8_t keycode)
 {
@@ -115,10 +120,10 @@ static inline uint8_t is_shift_key(uint8_t keycode)
 }
 
 /**
- * @brief Is shift key release ?
- * 
- * @param keycode 
- * @return uint8_t 
+ * @brief Returns true if the keycode is a shift key release.
+ *
+ * @param keycode
+ * @return uint8_t
  */
 static inline uint8_t is_shift_release(uint8_t keycode)
 {
@@ -126,11 +131,11 @@ static inline uint8_t is_shift_release(uint8_t keycode)
 }
 
 /**
- * @brief Get char
+ * @brief Single Character Input
  *
  * @return char
  */
-char GETC()
+char GETC(void)
 {
     static uint8_t shifted = 0;
 
@@ -138,8 +143,10 @@ char GETC()
 
     while (!character)
     {
+        // Waits for a key press,
         uint8_t keycode = inb(KEYBOARD_PORT);
 
+        // handles shift state,
         if (is_shift_key(keycode))
         {
             shifted = 1;
@@ -152,6 +159,7 @@ char GETC()
             continue;
         }
 
+        // and returns the corresponding ASCII character
         character = ascii_char(keycode, shifted);
 
         // Wait for key release
@@ -163,7 +171,7 @@ char GETC()
 }
 
 /**
- * @brief Get string
+ * @brief String Input
  *
  * @param dest
  * @param size
@@ -180,7 +188,7 @@ void GETS(char *dest, long unsigned int size)
     {
         char c = GETC();
 
-        // Backspace
+        // Handles backspace
         if (c == '\b')
         {
             if (tlen)
@@ -192,7 +200,7 @@ void GETS(char *dest, long unsigned int size)
             *dest = 0;
             continue;
         }
-        
+
         // Enter key
         if (c == '\n')
             break;
@@ -201,7 +209,7 @@ void GETS(char *dest, long unsigned int size)
         if (tlen >= size)
             continue;
 
-        // Print character
+        // Echoes each character to the screen as it is typed
         PUTC(c);
 
         // Update dest

@@ -2,10 +2,31 @@
 #include <STD/stdlib.h>
 #include <STD/stdint.h>
 
-#define __MEMORY_POOL_SIZE__ 0x8FFFF
+#define MEMORY_POOL_SIZE 0x90000
 
-static char memory[__MEMORY_POOL_SIZE__];
-static char *mfree = memory;
+/**
+ * @brief Memory block
+ *
+ */
+typedef struct mem_block
+{
+
+    size_t size;
+    int32_t free;
+
+    struct mem_block *next;
+
+} mem_block_t;
+
+/* Memory pool */
+static char memory[MEMORY_POOL_SIZE];
+
+/* Head */
+static mem_block_t *head = NULL;
+
+#define ALIGN4(x) (((x) + 3) & ~3)
+
+#define BLOCK_SIZE sizeof(mem_block_t)
 
 /**
  * @brief Memory allocation
@@ -15,12 +36,42 @@ static char *mfree = memory;
  */
 void *malloc(size_t size)
 {
-    if ((mfree + size) > (memory + __MEMORY_POOL_SIZE__))
-        return NULL;
+    size = ALIGN4(size);
 
-    void *alloc = mfree;
-    mfree += size;
-    return alloc;
+    if (!head)
+    {
+        head = (mem_block_t *)memory;
+        head->size = MEMORY_POOL_SIZE - BLOCK_SIZE;
+        head->free = 1;
+        head->next = NULL;
+    }
+
+    mem_block_t *curr = head;
+
+    while (curr)
+    {
+        if (curr->free && curr->size >= size)
+        {
+            if (curr->size >= size + BLOCK_SIZE + 4)
+            {
+                mem_block_t *new_block = (mem_block_t *)((char *)curr + BLOCK_SIZE + size);
+
+                new_block->size = curr->size - size - BLOCK_SIZE;
+                new_block->free = 1;
+                new_block->next = curr->next;
+
+                curr->size = size;
+                curr->next = new_block;
+            }
+
+            curr->free = 0;
+            return (char *)curr + BLOCK_SIZE;
+        }
+
+        curr = curr->next;
+    }
+
+    return NULL;
 }
 
 /**
@@ -30,20 +81,30 @@ void *malloc(size_t size)
  */
 void free(void *ptr)
 {
-    if (ptr)
-        __asm__("nop");
-    return;
-}
+    if (!ptr)
+        return;
 
-/**
- * @brief Free allocated memory
- *
- */
-void free_all()
-{
-    for (size_t i = 0; i < sizeof(memory); i++)
-        memory[i] = 0;
-    mfree = memory;
+    mem_block_t *block = (mem_block_t *)((char *)ptr - BLOCK_SIZE);
+    block->free = 1;
+
+    while (block->next && block->next->free)
+    {
+        block->size += BLOCK_SIZE + block->next->size;
+        block->next = block->next->next;
+    }
+
+    mem_block_t *curr = head;
+
+    while (curr && curr->next)
+    {
+        if (curr->next == block && curr->free)
+        {
+            curr->size += BLOCK_SIZE + block->size;
+            curr->next = block->next;
+            break;
+        }
+        curr = curr->next;
+    }
 }
 
 /**

@@ -161,7 +161,7 @@ static char *Runtime(AST tree)
 
         case NODE_BORIUM_COLOR:
             if ((returned = Eval(curr->child)))
-                SET_LOCAL_COLOR(atoi(returned));
+                SET_GLOBAL_COLOR(atoi(returned));
             break;
 
         case NODE_BORIUM_CURSOR:

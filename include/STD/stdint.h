@@ -1,6 +1,8 @@
 #ifndef __STDINT_H__
 #define __STDINT_H__ 0x1
 
+/* #pragma once */
+
 /* Integer */
 
 /* 8 bit (1 byte) */

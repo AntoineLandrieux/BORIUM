@@ -29,19 +29,6 @@ static uint8_t MOVE_CURSOR = 0x1;
 static uint8_t BLINK = 0x7F;
 
 /**
- * @brief Low-Level Output
- *
- * @param port
- * @param value
- */
-void outb(unsigned short port, unsigned char value)
-{
-    // Writes a byte to a hardware port
-    // (used for VGA register access).
-    __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
-}
-
-/**
  *
  * Cursor Management
  *
@@ -60,11 +47,11 @@ static void update_cursor_location(void)
 
     uint16_t position = (uint16_t)(VGA_POINTER / 2);
 
-    outb(0x3D4, 0x0F);
-    outb(0x3D5, (uint8_t)(position & 0xFF));
+    OUTB(0x3D4, 0x0F);
+    OUTB(0x3D5, (uint8_t)(position & 0xFF));
 
-    outb(0x3D4, 0x0E);
-    outb(0x3D5, (uint8_t)((position >> 8) & 0xFF));
+    OUTB(0x3D4, 0x0E);
+    OUTB(0x3D5, (uint8_t)((position >> 8) & 0xFF));
 }
 
 /**
@@ -139,15 +126,6 @@ void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned sh
  * Text Output Functions
  *
  */
-
-/**
- * @brief Enables or disables text blinking by setting the BLINK mask
- *
- */
-void TEXT_BLINKING(unsigned char enable)
-{
-    BLINK = enable ? 0xFF : 0x7F;
-}
 
 /**
  * @brief Clears the graphics and text screen
@@ -269,27 +247,22 @@ void PUTS(const char *string)
  */
 
 /**
- * @brief Sets the local color for text output
+ * @brief Enables or disables text blinking by setting the BLINK mask
  *
- * @param color
  */
-void SET_LOCAL_COLOR(unsigned char color)
+void TEXT_BLINKING(unsigned char enable)
 {
-    GLOBAL_COLOR = color & BLINK;
+    BLINK = enable ? 0xFF : 0x7F;
 }
 
 /**
- * @brief Sets the global color and updates all text attributes on the screen
+ * @brief Sets the global color
  *
  * @param color
  */
 void SET_GLOBAL_COLOR(unsigned char color)
 {
-    char *VIDEO = (char *)VGA_TEXT_ADDRESS;
-    SET_LOCAL_COLOR(color);
-
-    for (uint16_t i = 1; i < (SCREEN_TEXT * 2); i += 2)
-        VIDEO[i] = GLOBAL_COLOR;
+    GLOBAL_COLOR = color;
 }
 
 /**

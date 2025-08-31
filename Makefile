@@ -33,8 +33,10 @@ default: clean
 	#
 	$(CC) $(CFLAGS) -c $(KERNEL)/kernel.c -o $(BIN)/kernel.o -I $(INCLUDE)
 	#
-	$(CC) $(CFLAGS) -c $(DRIVER)/video.c -o $(BIN)/dvideo.o -I $(INCLUDE)
+	$(CC) $(CFLAGS) -c $(DRIVER)/io.c -o $(BIN)/dio.o -I $(INCLUDE)
 	$(CC) $(CFLAGS) -c $(DRIVER)/keyboard.c -o $(BIN)/dkeyboard.o -I $(INCLUDE)
+	$(CC) $(CFLAGS) -c $(DRIVER)/speaker.c -o $(BIN)/dspeaker.o -I $(INCLUDE)
+	$(CC) $(CFLAGS) -c $(DRIVER)/video.c -o $(BIN)/dvideo.o -I $(INCLUDE)
 	#
 	$(CC) $(CFLAGS) -c $(STD)/stdlib.c -o $(BIN)/stdlib.o -I $(INCLUDE)
 	#
@@ -45,12 +47,12 @@ default: clean
 	$(CC) $(CFLAGS) -c $(CORE)/Runtime.c -o $(BIN)/Runtime.o -I $(INCLUDE)
 	$(CC) $(CFLAGS) -c $(CORE)/Tokenizer.c -o $(BIN)/Tokenizer.o -I $(INCLUDE)
 	#
-	$(LD) -m elf_i386 -T $(LINKER_SCRIPT) -o iso/boot/borium.elf $(BIN)/entry.o $(BIN)/kernel.o $(BIN)/dvideo.o $(BIN)/dkeyboard.o $(BIN)/stdlib.o $(BIN)/Error.o $(BIN)/Math.o $(BIN)/Memory.o $(BIN)/Parser.o $(BIN)/Runtime.o $(BIN)/Tokenizer.o
+	$(LD) -m elf_i386 -T $(LINKER_SCRIPT) -o iso/boot/borium.elf $(BIN)/entry.o $(BIN)/kernel.o $(BIN)/dio.o $(BIN)/dvideo.o $(BIN)/dspeaker.o $(BIN)/dkeyboard.o $(BIN)/stdlib.o $(BIN)/Error.o $(BIN)/Math.o $(BIN)/Memory.o $(BIN)/Parser.o $(BIN)/Runtime.o $(BIN)/Tokenizer.o
 	#
 	grub-mkrescue -o $(OUT) iso
 
 run:
-	qemu-system-x86_64 -cdrom $(OUT)
+	qemu-system-x86_64 -audiodev pa,id=speaker -machine pcspk-audiodev=speaker -cdrom $(OUT)
 
 clean:
 	rm -drf $(BIN)

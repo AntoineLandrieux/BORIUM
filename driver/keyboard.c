@@ -1,7 +1,6 @@
 #include <DRIVER/keyboard.h>
 #include <DRIVER/video.h>
 
-#include <STD/stddef.h>
 #include <STD/stdint.h>
 
 /**
@@ -68,21 +67,6 @@ static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
 };
 
 /**
- * @brief Low-Level Port Input
- *
- * @param port
- * @return unsigned char
- */
-unsigned char inb(unsigned short port)
-{
-    // Reads a byte from the specified hardware port
-    // (used to get keyboard scancodes)
-    unsigned char data;
-    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
-    return data;
-}
-
-/**
  * @brief Sets the current keyboard layout (QWERTY or AZERTY).
  *
  * @param keyboard
@@ -144,7 +128,7 @@ char GETC(void)
     while (!character)
     {
         // Waits for a key press,
-        uint8_t keycode = inb(KEYBOARD_PORT);
+        uint8_t keycode = INB(KEYBOARD_PORT);
 
         // handles shift state,
         if (is_shift_key(keycode))
@@ -163,7 +147,7 @@ char GETC(void)
         character = ascii_char(keycode, shifted);
 
         // Wait for key release
-        while (inb(KEYBOARD_PORT) == keycode)
+        while (INB(KEYBOARD_PORT) == keycode)
             /* pass */;
     }
 
@@ -182,7 +166,7 @@ void GETS(char *dest, long unsigned int size)
         return;
 
     // Length
-    size_t tlen = 0;
+    uint64_t tlen = 0;
 
     while (1)
     {

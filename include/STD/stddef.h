@@ -1,6 +1,8 @@
 #ifndef __STDDEF_H__
 #define __STDDEF_H__ 0x1
 
+/* #pragma once */
+
 #define NULL ((void *)(0x00))
 
 #ifdef __SIZE_TYPE__

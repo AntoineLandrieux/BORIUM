@@ -1,6 +1,11 @@
 #ifndef __KERNEL_H__
 #define __KERNEL_H__ 0x1
 
+/* #pragma once */
+
+// Not implemented yet
+// #include "fs.h"
+
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -30,13 +35,6 @@ extern unsigned char running;
 
 // Stores the current username (max 20 chars).
 extern char USERNAME[20];
-
-/**
- * @brief Busy-wait loop to simulate a sleep/delay for a given number of milliseconds.
- *
- * @param ms (milliseconds)
- */
-void SLEEP(unsigned int ms);
 
 /**
  * @brief Implements a simple line-based text editor

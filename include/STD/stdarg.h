@@ -1,6 +1,8 @@
 #ifndef __STDARG_H__
 #define __STDARG_H__ 0x1
 
+/* #pragma once */
+
 // Variable argument list
 typedef char *va_list;
 

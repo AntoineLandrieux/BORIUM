@@ -1,10 +1,16 @@
 #ifndef __STDLIB_H__
 #define __STDLIB_H__ 0x1
 
+/* #pragma once */
+
+// #include "../fs.h"
 #include "stddef.h"
 
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
+
+/* File */
+typedef struct __flatfs_file_entry__ FILE;
 
 /**
  * @brief System commands

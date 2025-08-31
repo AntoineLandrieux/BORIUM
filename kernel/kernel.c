@@ -1,4 +1,5 @@
 #include <DRIVER/keyboard.h>
+#include <DRIVER/speaker.h>
 #include <DRIVER/video.h>
 
 #include <STD/stdlib.h>
@@ -44,25 +45,6 @@ int system(char *command)
 {
     // Returns errorlevel
     return Execute("shell", command);
-}
-
-/**
- * @brief Busy-wait loop to simulate a sleep/delay for a given number of milliseconds.
- *
- *
- * @param ms
- */
-void SLEEP(unsigned int ms)
-{
-    volatile unsigned long count = 0;
-    // NOTE: Arbitrary value
-    unsigned long limit = ms * 500000;
-
-    while (count < limit)
-    {
-        __asm__ __volatile__("nop");
-        count++;
-    }
 }
 
 /**
@@ -167,7 +149,7 @@ static void KEYBOARD_SELECTOR(void)
     UPDATE_AND_MOVE_CURSOR(0);
     uint16_t cursor = GET_CURSOR();
 
-    while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
+    while (INB(KEYBOARD_PORT) == SCANCODE_ENTER)
         /* pass */;
 
     while (1)
@@ -177,7 +159,7 @@ static void KEYBOARD_SELECTOR(void)
         PUTS("      \t 2) ");
         CPUTS(" AZERTY \n", selected == AZERTY ? 0x9F : 0xF1);
 
-        switch (inb(KEYBOARD_PORT))
+        switch (INB(KEYBOARD_PORT))
         {
         case SCANCODE_UP:
         case SCANCODE_LEFT:
@@ -191,7 +173,7 @@ static void KEYBOARD_SELECTOR(void)
 
         case SCANCODE_ENTER:
 
-            while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
+            while (INB(KEYBOARD_PORT) == SCANCODE_ENTER)
                 /* Wait for release */;
 
             PUTS(" Keyboard (");
@@ -222,102 +204,6 @@ static void USER_SELECTOR(void)
 
     PUTS(" Enter a username : ");
     GETS(USERNAME, sizeof(USERNAME));
-}
-
-/**
- * @brief Allows the user to select a color theme (Light, Dark, Girly, Powershell) using arrow keys and Enter.
- *
- *
- * @return unsigned char Returns the selected theme color code.
- */
-static unsigned char THEME_SELECTOR(void)
-{
-    CPUTS("\n THEME SELECT      \n", 0x1F);
-
-    USAGE_SELECTOR();
-
-    int8_t selected = 0;
-    UPDATE_AND_MOVE_CURSOR(0);
-    uint16_t cursor = GET_CURSOR();
-
-    while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
-        /* pass */;
-
-    while (1)
-    {
-        PUTS("      \t 1) ");
-        CPUTS(" LIGHT      ", selected == 0 ? 0x8F : 0xF1);
-        PUTS("      \t 2) ");
-        CPUTS(" DARK       \n", selected == 1 ? 0x0F : 0xF1);
-        PUTS("      \t 3) ");
-        CPUTS(" GIRLY      ", selected == 2 ? 0xDF : 0xF1);
-        PUTS("      \t 4) ");
-        CPUTS(" POWERSHELL \n", selected == 3 ? 0x1F : 0xF1);
-
-        switch (inb(KEYBOARD_PORT))
-        {
-        case SCANCODE_UP:
-            if (selected == 2 || selected == 3)
-                selected -= 2;
-            break;
-
-        case SCANCODE_DOWN:
-            if (selected == 0 || selected == 1)
-                selected += 2;
-            break;
-
-        case SCANCODE_RIGHT:
-            if (selected == 0 || selected == 2)
-                selected += 1;
-            break;
-
-        case SCANCODE_LEFT:
-            if (selected == 1 || selected == 3)
-                selected -= 1;
-            break;
-
-        case SCANCODE_ENTER:
-
-            while (inb(KEYBOARD_PORT) == SCANCODE_ENTER)
-                /* Wait for release */;
-
-            PUTS(" Theme (");
-            PUTC('0' + selected + 1);
-            PUTS(") selected !\n");
-
-            UPDATE_AND_MOVE_CURSOR(1);
-
-            switch (selected)
-            {
-            case 0:
-                // Light
-                return 0xF0;
-
-            case 1:
-                // Dark
-                return 0x0F;
-
-            case 2:
-                // Girly
-                return 0xDF;
-
-            case 3:
-                // Powershell
-                return 0x1F;
-
-            default:
-                break;
-            }
-
-        default:
-            break;
-        }
-
-        SET_CURSOR(cursor);
-    }
-
-    UPDATE_AND_MOVE_CURSOR(1);
-    return 0x0F;
 }
 
 /**
@@ -358,6 +244,18 @@ static void shell()
 }
 
 /**
+ * @brief Startup sound
+ * 
+ */
+static inline STARTUP_SOUND(void)
+{
+    PLAY_NOTE(NOTE_C, 1000);
+    PLAY_NOTE(NOTE_D, 1000);
+    PLAY_NOTE(NOTE_E, 1000);
+    PLAY_NOTE(NOTE_D, 1000);
+}
+
+/**
  * @brief Setup the kernel
  *
  */
@@ -370,10 +268,12 @@ void SETUP(void)
     CPUTS("\n BORIUM SETUP ", 0xF1);
     PUTS("\n =================================\n");
 
+    // Startup sound!
+    STARTUP_SOUND();
+
     // Prompts for keyboard layout, username, and theme.
     KEYBOARD_SELECTOR();
     USER_SELECTOR();
-    unsigned char theme = THEME_SELECTOR();
     CPUTS("\n All Ok ? [Y/N] ", 0xF0);
 
     // Asks for confirmation (Y/N). If not confirmed, restarts setup.
@@ -384,7 +284,6 @@ void SETUP(void)
         // Yes
         case 'y':
         case 'Y':
-            SET_GLOBAL_COLOR(theme);
             return SCREEN_CLEAR();
 
         // No

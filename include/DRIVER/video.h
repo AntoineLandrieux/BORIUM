@@ -1,6 +1,8 @@
 #ifndef __VIDEO_H__
 #define __VIDEO_H__ 0x1
 
+#include "io.h"
+
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -33,14 +35,6 @@
 #define SCREEN_TEXT_HEIGHT 25
 
 #define SCREEN_TEXT (SCREEN_TEXT_HEIGHT * SCREEN_TEXT_WIDTH)
-
-/**
- * @brief Low-Level Output
- *
- * @param port
- * @param value
- */
-void outb(unsigned short port, unsigned char value);
 
 /**
  *
@@ -102,12 +96,6 @@ void FILL_RECT(unsigned short x, unsigned short y, unsigned short w, unsigned sh
  */
 
 /**
- * @brief Enables or disables text blinking by setting the BLINK mask
- *
- */
-void TEXT_BLINKING(unsigned char enable);
-
-/**
  * @brief Clears the graphics and text screen
  *
  */
@@ -150,14 +138,13 @@ void PUTS(const char *string);
  */
 
 /**
- * @brief Sets the local color for text output
+ * @brief Enables or disables text blinking by setting the BLINK mask
  *
- * @param color
  */
-void SET_LOCAL_COLOR(unsigned char color);
+void TEXT_BLINKING(unsigned char enable);
 
 /**
- * @brief Sets the global color and updates all text attributes on the screen
+ * @brief Sets the global color
  *
  * @param color
  */

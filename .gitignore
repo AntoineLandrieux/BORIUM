@@ -18,6 +18,11 @@
 
 # TEMP
 
+# Not implemented yet
+fs.*
+
+tmp.*
+
 bin/
 lib/
 min/

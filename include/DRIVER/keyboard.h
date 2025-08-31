@@ -1,6 +1,10 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__ 0x1
 
+/* #pragma once */
+
+#include "io.h"
+
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -29,14 +33,6 @@ typedef enum keyboard_layout
     MAX_KEYBOARD_LAYOUT
 
 } KEYBOARD_LAYOUT;
-
-/**
- * @brief Low-Level Port Input
- *
- * @param port
- * @return unsigned char
- */
-unsigned char inb(unsigned short port);
 
 /**
  * @brief Sets the current keyboard layout (QWERTY or AZERTY).

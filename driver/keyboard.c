@@ -21,7 +21,7 @@
 static KEYBOARD_LAYOUT KEYBOARD = QUERTY;
 
 // Keyboard layout (Keymaps)
-static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
+static const char KEYBOARDS[][58] = {
     /* QWERTY */
     {
         //
@@ -44,7 +44,7 @@ static const char KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
 };
 
 // Keyboard layout (Shifted Keymap)
-static const char SHIFTED_KEYBOARDS[MAX_KEYBOARD_LAYOUT][58] = {
+static const char SHIFTED_KEYBOARDS[][58] = {
     /* QWERTY */
     {
         //
@@ -121,7 +121,7 @@ static inline uint8_t is_shift_release(uint8_t keycode)
  */
 char GETC(void)
 {
-    static uint8_t shifted = 0;
+    uint8_t shifted = 0;
 
     char character = 0;
 

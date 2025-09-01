@@ -25,7 +25,7 @@ unsigned char INB(unsigned short port)
     // Reads a byte from the specified hardware port
     // (used to get keyboard scancodes)
     unsigned char data;
-    __asm__ __volatile__("inb %1, %0" : "=a"(data) : "Nd"(port));
+    __asm__ volatile("inb %1, %0" : "=a"(data) : "Nd"(port));
     return data;
 }
 
@@ -56,7 +56,7 @@ void SLEEP(unsigned int ms)
 
     while (count < limit)
     {
-        __asm__ __volatile__("nop");
+        __asm__ volatile("nop");
         count++;
     }
 }

@@ -16,6 +16,8 @@
  *
  */
 
+static uint8_t SPEAKER_STATUS = 0;
+
 /**
  * @brief Frequency table for musical notes (A, B, C, D, E, F, G and their sharps/flats)
  *
@@ -44,7 +46,9 @@ static uint32_t NOTE_FREQUENCY[12] = {
  */
 void ENABLE_SPEAKER()
 {
-    OUTB(SPEAKER_PORT, INB(SPEAKER_PORT) | 0x03);
+    if (!SPEAKER_STATUS)
+        OUTB(SPEAKER_PORT, INB(SPEAKER_PORT) | 0x03);
+    SPEAKER_STATUS = 1;
 }
 
 /**
@@ -53,7 +57,9 @@ void ENABLE_SPEAKER()
  */
 void DISABLE_SPEAKER()
 {
-    OUTB(SPEAKER_PORT, INB(SPEAKER_PORT) & 0xFC);
+    if (SPEAKER_STATUS)
+        OUTB(SPEAKER_PORT, INB(SPEAKER_PORT) & 0xFC);
+    SPEAKER_STATUS = 0;
 }
 
 /**
@@ -63,6 +69,9 @@ void DISABLE_SPEAKER()
  */
 void PLAY_FREQUENCY(unsigned int frequency)
 {
+    if (!frequency)
+        return;
+
     uint32_t divisor = 1193180 / frequency;
 
     OUTB(0x43, 0xB6);
@@ -87,11 +96,23 @@ unsigned int NOTE_TO_FREQUENCY(note_t note)
  * @brief Play a musical note for a specified duration
  *
  * @param note Musical note (note_t)
+ * @param hight Hight
  * @param duration Duration in milliseconds
  */
-void PLAY_NOTE(note_t note, unsigned int duration)
+void PLAY_NOTE(note_t note, unsigned char hight, unsigned int duration)
 {
-    PLAY_FREQUENCY(NOTE_FREQUENCY[note]);
+    PLAY_FREQUENCY(NOTE_FREQUENCY[note] * hight);
     SLEEP(duration);
+    DISABLE_SPEAKER();
+}
+
+/**
+ * @brief Terminal beep
+ * 
+ */
+void TERMINAL_BEEP(void)
+{
+    PLAY_FREQUENCY(1000);
+    SLEEP(100);
     DISABLE_SPEAKER();
 }

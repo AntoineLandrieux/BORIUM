@@ -103,17 +103,17 @@ void *LeaveException(SoareExceptions error, char *string, Document file)
         itoa(ln, sizeof(ln), (int)file.ln);
         itoa(col, sizeof(col), (int)file.col);
 
-        CPUTS("Except: ", 0xC);
-        CPUTS(Exceptions[error], 0xC);
-        CPUTS("\n        \"", 0xC);
-        CPUTS(string, 0xC);
-        CPUTS("\"\n         ^~~~\n", 0xC);
-        CPUTS("        At file: ", 0xC);
-        CPUTS(file.file, 0xC);
-        CPUTC(':', 0xC);
-        CPUTS(ln, 0xC);
-        CPUTC(':', 0xC);
-        CPUTS(col, 0xC);
+        CPUTS("\aExcept: ", 0x4);
+        CPUTS(Exceptions[error], 0x4);
+        CPUTS("\n        \"", 0x4);
+        CPUTS(string, 0x4);
+        CPUTS("\"\n         ^~~~\n", 0x4);
+        CPUTS("        At file: ", 0x4);
+        CPUTS(file.file, 0x4);
+        CPUTC(':', 0x4);
+        CPUTS(ln, 0x4);
+        CPUTC(':', 0x4);
+        CPUTS(col, 0x4);
 
         PUTC('\n');
     }

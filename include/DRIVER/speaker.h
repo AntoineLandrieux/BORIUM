@@ -91,8 +91,15 @@ unsigned int NOTE_TO_FREQUENCY(note_t note);
  * @brief Play a musical note for a specified duration
  *
  * @param note Musical note (note_t)
+ * @param hight Hight
  * @param duration Duration in milliseconds
  */
-void PLAY_NOTE(note_t note, unsigned int duration);
+void PLAY_NOTE(note_t note, unsigned char hight, unsigned int duration);
+
+/**
+ * @brief Terminal beep
+ * 
+ */
+void TERMINAL_BEEP(void);
 
 #endif /* __SPEAKER_H__ */

@@ -7,10 +7,15 @@ SOARE and BORIUM are distributed under the [MIT License](LICENSE).
 
 ![IMAGE](resources/github/image.png)
 
+[**➡️ See more pictures**](resources/github/README.md)
+
 ## 📖 Documentation
 
 > [!IMPORTANT]  
 > See [BORIUM Documentation](doc/documentation.md)
+>
+> See [SOARE Documentation](https://github.com/AntoineLandrieux/SOARE/blob/main/doc/documentation.md)
+>
 
 ## 🧑‍💻 INTERPRETER
 

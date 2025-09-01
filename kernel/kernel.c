@@ -30,8 +30,6 @@ unsigned char running = 0;
 char USERNAME[20] = {0};
 
 #define SCANCODE_ENTER 0x1C
-#define SCANCODE_LEFT 0x4B
-#define SCANCODE_RIGHT 0x4D
 #define SCANCODE_UP 0x48
 #define SCANCODE_DOWN 0x50
 
@@ -125,17 +123,6 @@ void EDITOR(void)
 }
 
 /**
- * @brief Displays instructions for using arrow keys and Enter to select options.
- *
- */
-static void USAGE_SELECTOR(void)
-{
-    TEXT_BLINKING(1);
-    CPUTS(" USE ARROW KEY AND PRESS ENTER TO SELECT \n\n", 0xFC);
-    TEXT_BLINKING(0);
-}
-
-/**
  * @brief Allows the user to select the keyboard layout (QUERTY/AZERTY) using arrow keys and Enter.
  *
  */
@@ -143,7 +130,9 @@ static void KEYBOARD_SELECTOR(void)
 {
     CPUTS("\n KEYBOARD SELECT   \n", 0x1F);
 
-    USAGE_SELECTOR();
+    TEXT_BLINKING(1);
+    CPUTS(" USE ARROW KEY AND PRESS ENTER TO SELECT \n\n", 0xF4);
+    TEXT_BLINKING(0);
 
     uint8_t selected = QUERTY;
     UPDATE_AND_MOVE_CURSOR(0);
@@ -162,12 +151,10 @@ static void KEYBOARD_SELECTOR(void)
         switch (INB(KEYBOARD_PORT))
         {
         case SCANCODE_UP:
-        case SCANCODE_LEFT:
             selected = QUERTY;
             break;
 
         case SCANCODE_DOWN:
-        case SCANCODE_RIGHT:
             selected = AZERTY;
             break;
 
@@ -176,7 +163,7 @@ static void KEYBOARD_SELECTOR(void)
             while (INB(KEYBOARD_PORT) == SCANCODE_ENTER)
                 /* Wait for release */;
 
-            PUTS(" Keyboard (");
+            PUTS("\n Keyboard (");
             PUTC('0' + selected + 1);
             PUTS(") selected !\n");
 
@@ -198,12 +185,42 @@ static void KEYBOARD_SELECTOR(void)
  * @brief Select username (purely decorative)
  *
  */
-static void USER_SELECTOR(void)
+static inline void USER_SELECTOR(void)
 {
     CPUTS("\n USER SELECT       \n\n", 0x1F);
 
     PUTS(" Enter a username : ");
     GETS(USERNAME, sizeof(USERNAME));
+}
+
+/**
+ * @brief Asks for confirmation (Y/N)
+ *
+ * @return uint8_t
+ */
+static inline uint8_t CONFIRM(void)
+{
+    CPUTS("\n CONFIRM          \n\n", 0x1F);
+    CPUTS(" All Ok ? [Y/N] ", 0xF0);
+
+    while (1)
+    {
+        switch (GETC())
+        {
+        // Yes
+        case 'y':
+        case 'Y':
+            return 1;
+
+        // No
+        case 'n':
+        case 'N':
+            return 0;
+
+        default:
+            break;
+        }
+    }
 }
 
 /**
@@ -245,14 +262,49 @@ static void shell()
 
 /**
  * @brief Startup sound
- * 
+ *
  */
-static inline STARTUP_SOUND(void)
+static inline void STARTUP_SOUND(void)
 {
-    PLAY_NOTE(NOTE_C, 1000);
-    PLAY_NOTE(NOTE_D, 1000);
-    PLAY_NOTE(NOTE_E, 1000);
-    PLAY_NOTE(NOTE_D, 1000);
+    PLAY_NOTE(NOTE_C, 2, 500);
+    PLAY_NOTE(NOTE_D, 2, 500);
+    PLAY_NOTE(NOTE_E, 2, 500);
+    PLAY_NOTE(NOTE_D, 2, 500);
+}
+
+/**
+ * @brief Startup screen
+ *
+ */
+static inline void STARTUP_SCREEN(void)
+{
+    // Clears the screen and sets default color.
+    SET_GLOBAL_COLOR(0xF0);
+    SCREEN_CLEAR();
+
+    SET_CURSOR(SCREEN_TEXT_WIDTH * 2);
+
+    PUTS(
+        //
+        "       _____  _____ _____ _____ _   _ __  __ \n"
+        "      | ___ \\|  _  | ___ \\_   _| | | |  \\/  |\n"
+        "      | |_/ /| | | | |_/ / | | | | | | .  . |\n"
+        "      | ___ \\| | | |    /  | | | | | | |\\/| |\n"
+        "      | |_/ /\\ \\_/ / |\\ \\ _| |_| |_| | |  | |\n"
+        "      \\____/  \\___/\\_| \\_|\\___/ \\___/\\_|  |_/\n"
+        "       BORIUM KERNEL (MIT LICENSE)"
+        //
+    );
+
+    // Sets running to true
+    running = 1;
+
+    SET_CURSOR(SCREEN_TEXT_WIDTH * 24);
+    CPUTS("[-] Booting.....", 0x0F);
+    STARTUP_SOUND();
+    SET_CURSOR(SCREEN_TEXT_WIDTH * 24);
+    CPUTS("[-] Load setup.....", 0x0F);
+    SLEEP(500);
 }
 
 /**
@@ -265,36 +317,18 @@ void SETUP(void)
     SET_GLOBAL_COLOR(0xF0);
     SCREEN_CLEAR();
 
-    CPUTS("\n BORIUM SETUP ", 0xF1);
+    CPUTS("\a\n BORIUM SETUP ", 0xF1);
     PUTS("\n =================================\n");
-
-    // Startup sound!
-    STARTUP_SOUND();
 
     // Prompts for keyboard layout, username, and theme.
     KEYBOARD_SELECTOR();
     USER_SELECTOR();
-    CPUTS("\n All Ok ? [Y/N] ", 0xF0);
 
-    // Asks for confirmation (Y/N). If not confirmed, restarts setup.
-    while (1)
-    {
-        switch (GETC())
-        {
-        // Yes
-        case 'y':
-        case 'Y':
-            return SCREEN_CLEAR();
+    if (!CONFIRM())
+        return SETUP();
 
-        // No
-        case 'n':
-        case 'N':
-            return SETUP();
-
-        default:
-            break;
-        }
-    }
+    SET_GLOBAL_COLOR(0x0F);
+    SCREEN_CLEAR();
 }
 
 /**
@@ -303,14 +337,10 @@ void SETUP(void)
  */
 void start(void)
 {
-    // Clears the screen,
-    SCREEN_CLEAR();
-
-    // Sets running to true,
-    running = 1;
-
+    // Statup screen
+    STARTUP_SCREEN();
     // Runs setup,
     SETUP();
-    //  and enters the shell loop.
+    // And enters the shell loop.
     shell();
 }

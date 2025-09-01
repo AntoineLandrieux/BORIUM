@@ -28,9 +28,7 @@ typedef enum keyboard_layout
 {
 
     QUERTY,
-    AZERTY,
-
-    MAX_KEYBOARD_LAYOUT
+    AZERTY
 
 } KEYBOARD_LAYOUT;
 

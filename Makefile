@@ -52,7 +52,7 @@ default: clean
 	grub-mkrescue -o $(OUT) iso
 
 run:
-	qemu-system-x86_64 -audiodev pa,id=speaker -machine pcspk-audiodev=speaker -cdrom $(OUT)
+	qemu-system-x86_64 -cdrom $(OUT)
 
 clean:
 	rm -drf $(BIN)

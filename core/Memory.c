@@ -29,7 +29,7 @@ MEM MEMORY = NULL;
  */
 MEM Mem(void)
 {
-    MEM memory = (mem*)malloc(sizeof(struct mem));
+    MEM memory = (mem *)malloc(sizeof(struct mem));
 
     if (!memory)
         return __SOARE_OUT_OF_MEMORY();

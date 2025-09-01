@@ -1,4 +1,5 @@
 #include <DRIVER/video.h>
+#include <DRIVER/speaker.h>
 
 #include <STD/stdint.h>
 
@@ -142,7 +143,7 @@ void SCREEN_CLEAR()
 
     // Fills text attributes with the global color
     for (uint16_t i = 0; i < (SCREEN_TEXT * 2); i++)
-        VIDEO[i] = i % 2 ? GLOBAL_COLOR : 0;
+        VIDEO[i] = i % 2 ? GLOBAL_COLOR & BLINK : 0;
 
     // Resets the cursor
     update_cursor_location();
@@ -160,7 +161,7 @@ static void SCREEN_TEXT_SCROLL()
     for (unsigned short i = 0; i < VGA_POINTER; i++)
     {
         VIDEO[i] = VIDEO[i + (SCREEN_TEXT_WIDTH * 2)];
-        VIDEO[i + (SCREEN_TEXT_WIDTH * 2)] = i % 2 ? GLOBAL_COLOR : 0;
+        VIDEO[i + (SCREEN_TEXT_WIDTH * 2)] = i % 2 ? GLOBAL_COLOR & BLINK : 0;
     }
 
     update_cursor_location();
@@ -182,7 +183,7 @@ void CPUTC(const char character, const unsigned char color)
     switch (character)
     {
     case '\a':
-        SCREEN_CLEAR();
+        TERMINAL_BEEP();
         break;
 
     case '\b':
@@ -214,6 +215,8 @@ void CPUTC(const char character, const unsigned char color)
  */
 void CPUTS(const char *string, const unsigned char color)
 {
+    if (!string)
+        return CPUTS("(null)", color);
     for (; *string; string++)
         CPUTC(*string, color);
 }

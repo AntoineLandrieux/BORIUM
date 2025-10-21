@@ -17,7 +17,7 @@
  */
 
 // Stores the current keyboard layout.
-static KEYBOARD_LAYOUT KEYBOARD = QUERTY;
+static KEYBOARD_LAYOUT KEYBOARD = QWERTY;
 
 // Keyboard layout (Keymaps)
 static const char KEYBOARDS[][58] = {

@@ -28,7 +28,7 @@
 typedef enum keyboard_layout
 {
 
-    QUERTY,
+    QWERTY,
     AZERTY
 
 } KEYBOARD_LAYOUT;

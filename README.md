@@ -1,7 +1,7 @@
 
 # ![LOGO](resources/icon/icon.svg) BORIUM
 
-SOARE and BORIUM are distributed under the [MIT License](LICENSE).
+[SOARE](https://github.com/AntoineLandrieux/SOARE/), [x86driver](https://github.com/AntoineLandrieux/SOARE/) and BORIUM are distributed under the [MIT License](LICENSE).
 
 ---
 
@@ -21,7 +21,7 @@ SOARE and BORIUM are distributed under the [MIT License](LICENSE).
 
 ```txt
 ? This is your first SOARE code !
-write "Hello World!";
+write("Hello World!");
 ```
 
 ## 🤲 Contributing

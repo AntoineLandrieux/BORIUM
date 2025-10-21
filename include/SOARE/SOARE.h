@@ -19,9 +19,9 @@
 /* SOARE major */
 #define SOARE_MAJOR 1
 /* SOARE minor */
-#define SOARE_MINOR 1
+#define SOARE_MINOR 2
 /* SOARE patch */
-#define SOARE_PATCH 1
+#define SOARE_PATCH 2
 
 /**
  * SOARE version
@@ -33,7 +33,7 @@
  * T: testing
  *
  */
-#define SOARE_VERSION "Rv1.1.1"
+#define SOARE_VERSION "Rv1.2.2"
 
 /* SOARE max input */
 #define __SOARE_MAX_INPUT__ 70
@@ -78,6 +78,10 @@ namespace SOARE
 #include "core/memory.h"
 #include "core/math.h"
 #include "core/runtime.h"
+
+        typedef AST soare_arguments_list;
+
+#include "core/custom.h"
 
 #ifdef __cplusplus
     }

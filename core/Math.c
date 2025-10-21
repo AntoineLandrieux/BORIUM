@@ -23,77 +23,17 @@
 #define __tokens_next() (*tokens) = (*tokens)->next
 
 /**
- * @brief Returns 1 if the string is Not a Number
- *
- * @param string
- * @return unsigned char
- */
-static unsigned char isNaN(char *string)
-{
-    // Is negative ?
-    if (*string == '-')
-        string++;
-
-    /**
-     *
-     * Example:
-     *
-     * -4   : Number (returns 0)
-     * 3.2  : Number (returns 0)
-     * -1.  : Number (returns 0)
-     * .    : Number (returns 0)
-     * 0.e  : Not a Number (returns 1)
-     * a.1  : Not a Number (returns 1)
-     * f    : Not a Number (returns 1)
-     *
-     */
-
-    for (unsigned char dot = 1; *string; string++)
-        if (*string == '.' && dot)
-            dot = 0;
-        else if (*string < '0' || *string > '9')
-            return 1;
-
-    return 0;
-}
-
-/**
- * @brief Duplicate a string
- *
- * @param value
- * @return char*
- */
-static char *vardup(char *string)
-{
-    char *result = strdup(string);
-    if (!result)
-        return __SOARE_OUT_OF_MEMORY();
-    return result;
-}
-
-/**
  * @brief Convert int to string
  *
  * @param number
  * @return char*
  */
-static char *__int(int number)
+static inline char *__int(int number)
 {
     // Convert double to string
     char string[100] = {0};
     // Duplicate string
-    return vardup(itoa(string, sizeof(string), number));
-}
-
-/**
- * @brief Convert float to string
- *
- * @param number
- * @return char*
- */
-static char *__float(double number)
-{
-    return __int((int)number);
+    return strdup(itoa(string, sizeof(string), number));
 }
 
 /**
@@ -102,16 +42,12 @@ static char *__float(double number)
  * @param boolean
  * @return char*
  */
-static char *__boolean(char boolean)
+static inline char *__boolean(char boolean)
 {
     // Convert char:1 to string
-    char string[2] = {0, 0};
-
-    // Now convert
-    string[0] = '0' + (boolean && 1);
-
+    char string[2] = {'0' + (boolean && 1), 0};
     // Duplicate string
-    return vardup(string);
+    return strdup(string);
 }
 
 /**
@@ -303,7 +239,7 @@ AST ParseExpr(Tokens **tokens, unsigned char priority)
  * @param size
  * @return long long
  */
-long long GetArrayIndex(AST array, size_t size)
+static long long GetArrayIndex(AST array, size_t size)
 {
     while (array)
         if (array->type != NODE_ARRAY)
@@ -369,19 +305,21 @@ static char *Array(char *value, AST array)
  * @param tree
  * @return char*
  */
-char *Math(AST tree)
+static char *Math(AST tree)
 {
-    int dx, dy;
-    char *sx, *sy;
-    char *result = NULL;
-
-    MEM get = NULL;
-
     switch (tree->type)
     {
-    case NODE_MEMGET:
+    case NODE_VALUE:
 
-        get = MemGet(MEMORY, tree->value);
+        return strdup(tree->value);
+
+    case NODE_CALL:
+
+        return RunFunction(tree);
+
+    case NODE_MEMGET:
+    {
+        MEM get = MemGet(MEMORY, tree->value);
 
         if (!get)
             return LeaveException(UndefinedReference, tree->value, tree->file);
@@ -389,20 +327,13 @@ char *Math(AST tree)
         if (get->body)
             return LeaveException(VariableDefinedAsFunction, tree->value, tree->file);
 
-        return vardup(get->value);
-
-    case NODE_CALL:
-
-        return RunFunction(tree);
-
-    case NODE_VALUE:
-
-        return vardup(tree->value);
+        return strdup(get->value);
+    }
 
     case NODE_OPERATOR:
-
-        sx = Eval(tree->child);
-        sy = Eval(tree->child->sibling);
+    {
+        char *sx = Eval(tree->child);
+        char *sy = Eval(tree->child->sibling);
 
         if (!sx || !sy)
         {
@@ -411,44 +342,41 @@ char *Math(AST tree)
             return NULL;
         }
 
-        if (*(tree->value) == ',')
+        char *result = NULL;
+
+        switch (*(tree->value))
         {
+        case ',':
             if (!(result = malloc(strlen(sx) + strlen(sy) + 1)))
                 return __SOARE_OUT_OF_MEMORY();
 
+            result[0] = 0;
             strcat(result, sx);
             strcat(result, sy);
             free(sx);
             free(sy);
             return result;
+
+        case '=':
+            result = __boolean(!strcmp(sx, sy));
+            free(sx);
+            free(sy);
+            return result;
+
+        case '~':
+        case '!':
+            result = __boolean(strcmp(sx, sy));
+            free(sx);
+            free(sy);
+            return result;
+
+        default:
+            break;
         }
 
-        if (isNaN(sx) || isNaN(sy))
-        {
-            switch (*(tree->value))
-            {
-            case '=':
-                result = __boolean(!strcmp(sx, sy));
-                free(sx);
-                free(sy);
-                return result;
+        int dx = atoi(sx);
+        int dy = atoi(sy);
 
-            case '~':
-            case '!':
-                result = __boolean(strcmp(sx, sy));
-                free(sx);
-                free(sy);
-                return result;
-
-            default:
-                free(sx);
-                free(sy);
-                return LeaveException(MathError, tree->value, tree->file);
-            }
-        }
-
-        dx = atoi(sx);
-        dy = atoi(sy);
         free(sx);
         free(sy);
 
@@ -457,12 +385,13 @@ char *Math(AST tree)
 
         switch (*(tree->value))
         {
-        case '~':
-        case '!':
-            return __boolean(dx != dy);
+        // < or <=
+        case '<':
+            return __boolean(dx < dy || (tree->value[1] == '=' && dx == dy));
 
-        case '=':
-            return __boolean(dx == dy);
+        // > or >=
+        case '>':
+            return __boolean(dx > dy || (tree->value[1] == '=' && dx == dy));
 
         case '&':
             return __boolean(dx && dy);
@@ -471,32 +400,27 @@ char *Math(AST tree)
             return __boolean(dx || dy);
 
         case '^':
-            return __int((int)dx ^ (int)dy);
+            return __int(dx ^ dy);
 
         case '%':
-            return __int((int)dx % (int)dy);
+            return __int(dx % dy);
 
         case '*':
-            return __float(dx * dy);
+            return __int(dx * dy);
 
         case '/':
-            return __float(dx / dy);
+            return __int(dx / dy);
 
         case '+':
-            return __float(dx + dy);
+            return __int(dx + dy);
 
         case '-':
-            return __float(dx - dy);
-
-        case '<':
-            return __float(dx < dy || (dx == dy && tree->value[1] == '='));
-
-        case '>':
-            return __float(dx > dy || (dx == dy && tree->value[1] == '='));
+            return __int(dx - dy);
 
         default:
             return LeaveException(MathError, tree->value, tree->file);
         }
+    }
 
     default:
         return LeaveException(MathError, tree->value, tree->file);
@@ -513,17 +437,15 @@ char *Math(AST tree)
  */
 char *Eval(AST tree)
 {
-    char *string = NULL;
+    if (!tree)
+        return NULL;
 
-    if (tree)
+    char *string = Array(Math(tree), tree->child);
+
+    if (ErrorLevel())
     {
-        string = Array(Math(tree), tree->child);
-
-        if (ErrorLevel())
-        {
-            free(string);
-            return NULL;
-        }
+        free(string);
+        return NULL;
     }
 
     return string;

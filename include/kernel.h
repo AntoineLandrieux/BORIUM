@@ -49,9 +49,9 @@ void EDITOR(void);
 void SETUP(void);
 
 /**
- * @brief Start kernel
+ * @brief Initialize SOARE kernel functions
  *
  */
-void start(void);
+void INIT_SOARE_KERNEL(void);
 
 #endif /* __KERNEL_H__ */

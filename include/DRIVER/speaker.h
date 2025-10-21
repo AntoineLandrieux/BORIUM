@@ -16,6 +16,7 @@
  *
  * Antoine LANDRIEUX (MIT License) <speaker.h>
  * <https://github.com/AntoineLandrieux/BORIUM/>
+ * <https://github.com/AntoineLandrieux/x86driver/>
  *
  */
 
@@ -98,7 +99,7 @@ void PLAY_NOTE(note_t note, unsigned char hight, unsigned int duration);
 
 /**
  * @brief Terminal beep
- * 
+ *
  */
 void TERMINAL_BEEP(void);
 

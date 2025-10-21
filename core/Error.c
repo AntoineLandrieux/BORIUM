@@ -86,7 +86,6 @@ char ErrorLevel(void)
 
 /**
  * @brief Create a new error, and display it
- * @author Antoine LANDRIEUX
  *
  * @param error
  * @param string
@@ -103,26 +102,26 @@ void *LeaveException(SoareExceptions error, char *string, Document file)
         itoa(ln, sizeof(ln), (int)file.ln);
         itoa(col, sizeof(col), (int)file.col);
 
-        CPUTS("\aExcept: ", 0x4);
-        CPUTS(Exceptions[error], 0x4);
-        CPUTS("\n        \"", 0x4);
-        CPUTS(string, 0x4);
-        CPUTS("\"\n         ^~~~\n", 0x4);
-        CPUTS("        At file: ", 0x4);
-        CPUTS(file.file, 0x4);
-        CPUTC(':', 0x4);
-        CPUTS(ln, 0x4);
-        CPUTC(':', 0x4);
-        CPUTS(col, 0x4);
+        unsigned char color = GET_GLOBAL_COLOR();
+        SET_GLOBAL_COLOR(0x4);
 
-        PUTC('\n');
+        soare_write("\aExcept: ");
+        soare_write(Exceptions[error]);
+        soare_write("\n        \"");
+        soare_write(string);
+        soare_write("\"\n         ^~~~\n");
+        soare_write("        At file: ");
+        soare_write(file.file);
+        soare_write(":");
+        soare_write(ln);
+        soare_write(":");
+        soare_write(col);
+        soare_write("\n");
+
+        SET_GLOBAL_COLOR(color);
     }
 
-    // set error at level 1
-    errorlevel = 1;
-
-    // Store the error in the `__ERROR__` variable
-    MemSet(MemGet(MEMORY, "__ERROR__"), Exceptions[error]);
-
+    // Set error at level EXIT_FAILURE (1)
+    errorlevel = EXIT_FAILURE;
     return NULL;
 }

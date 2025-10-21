@@ -89,6 +89,8 @@ MEM MemGet(MEM memory, char *name);
  */
 MEM MemSet(MEM memory, char *value);
 
+#ifdef __SOARE_DEBUG
+
 /**
  * @brief Display all variables
  *
@@ -96,13 +98,7 @@ MEM MemSet(MEM memory, char *value);
  */
 void MemLog(MEM memory);
 
-/**
- * @brief Join 2 memories
- *
- * @param to
- * @param from
- */
-void MemJoin(MEM to, MEM from);
+#endif
 
 /**
  * @brief Free the allocated memory

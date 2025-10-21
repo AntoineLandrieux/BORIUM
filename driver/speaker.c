@@ -1,7 +1,5 @@
 #include <DRIVER/speaker.h>
 
-#include <STD/stdint.h>
-
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -13,17 +11,18 @@
  *
  * Antoine LANDRIEUX (MIT License) <speaker.c>
  * <https://github.com/AntoineLandrieux/BORIUM/>
+ * <https://github.com/AntoineLandrieux/x86driver/>
  *
  */
 
-static uint8_t SPEAKER_STATUS = 0;
+static unsigned char SPEAKER_STATUS = 0;
 
 /**
  * @brief Frequency table for musical notes (A, B, C, D, E, F, G and their sharps/flats)
  *
  * NOTE_FREQUENCY[note] returns the frequency in Hz for the given note_t value
  */
-static uint32_t NOTE_FREQUENCY[12] = {
+static unsigned int NOTE_FREQUENCY[12] = {
     //
     440, // A
     493, // B
@@ -72,11 +71,11 @@ void PLAY_FREQUENCY(unsigned int frequency)
     if (!frequency)
         return;
 
-    uint32_t divisor = 1193180 / frequency;
+    unsigned int divisor = 1193180 / frequency;
 
     OUTB(0x43, 0xB6);
-    OUTB(0x42, (uint8_t)(divisor));
-    OUTB(0x42, (uint8_t)(divisor >> 8));
+    OUTB(0x42, (unsigned char)(divisor));
+    OUTB(0x42, (unsigned char)(divisor >> 8));
 
     ENABLE_SPEAKER();
 }
@@ -108,7 +107,7 @@ void PLAY_NOTE(note_t note, unsigned char hight, unsigned int duration)
 
 /**
  * @brief Terminal beep
- * 
+ *
  */
 void TERMINAL_BEEP(void)
 {

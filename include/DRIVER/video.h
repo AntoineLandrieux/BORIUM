@@ -14,6 +14,7 @@
  *
  * Antoine LANDRIEUX (MIT License) <video.h>
  * <https://github.com/AntoineLandrieux/BORIUM/>
+ * <https://github.com/AntoineLandrieux/x86driver/>
  *
  */
 
@@ -130,6 +131,13 @@ void PUTC(const char character);
  * @param string
  */
 void PUTS(const char *string);
+
+/**
+ * @brief Registers a callback function to be called on screen updates
+ *
+ * @param callback
+ */
+void REGISTER_SCREEN_UPDATE_CALLBACK(void (*callback)(void));
 
 /**
  *

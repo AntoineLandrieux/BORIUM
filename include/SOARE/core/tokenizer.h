@@ -1,3 +1,4 @@
+
 #ifndef __SOARE_TOKENIZER_H__
 #define __SOARE_TOKENIZER_H__ 0x1
 
@@ -57,20 +58,6 @@ typedef struct Tokens
 } Tokens;
 
 /**
- * @brief Set the Environment object
- *
- * @param path
- */
-void SetEnvironment(char *path);
-
-/**
- * @brief Get the Environment object
- *
- * @return char*
- */
-char *GetEnvironment(void);
-
-/**
  * @brief Return an empty document
  *
  * @return Document
@@ -86,14 +73,6 @@ Document EmptyDocument(void);
  * @return Tokens*
  */
 Tokens *Token(char *__restrict__ filename, char *__restrict__ value, token_type type);
-
-/**
- * @brief Move on to the next token
- *
- * @param tokens
- * @param step
- */
-void TokenNext(Tokens **tokens, unsigned int step);
 
 /**
  * @brief Check if a sequence of tokens corresponds with a sequence of token types
@@ -112,12 +91,16 @@ unsigned char TokensFollowPattern(Tokens *tokens, unsigned int iteration, ...);
  */
 void TokensFree(Tokens *token);
 
+#ifdef __SOARE_DEBUG
+
 /**
  * @brief Display the tokens
  *
  * @param token
  */
 void TokensLog(Tokens *token);
+
+#endif /* __SOARE_DEBUG */
 
 /**
  * @brief Transform a string into a sequence of tokens

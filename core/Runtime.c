@@ -24,35 +24,38 @@
 static MEM FUNCTION = NULL;
 
 /**
+ * @brief Exit current statement #Runtime(AST)
+ *
+ * @param returns
+ * @return char*
+ */
+static char *ExitStatement(MEM statement, char *returns)
+{
+    MemFree(statement->next);
+    statement->next = NULL;
+    return returns;
+}
+
+/**
+ * @brief Exit current statement an error #Runtime(AST)
+ *
+ * @param error
+ * @param string
+ * @param file
+ * @return void*
+ */
+static void *ExitStatementError(MEM statement, SoareExceptions error, char *string, Document file)
+{
+    return ExitStatement(statement, LeaveException(error, string, file));
+}
+
+/**
  * @brief Executes code from a tree
  *
  * @param tree
  * @return char*
  */
 static char *Runtime(AST tree);
-
-/**
- * @brief Set Interpreter variables
- *
- * @param file
- */
-static void InterpreterVar(char *file)
-{
-    MEMORY = Mem();
-
-    /* SOARE version */
-    MemPush(MEMORY, "__SOARE__", strdup(SOARE_VERSION));
-    /* Current file */
-    MemPush(MEMORY, "__FILE__", strdup(file));
-    /* Path to SOARE executable */
-    MemPush(MEMORY, "__ENVIRONMENT__", strdup(GetEnvironment()));
-    /* Errors */
-    MemPush(MEMORY, "__ERROR__", strdup("NoError"));
-    /* Build date */
-    MemPush(MEMORY, "__BUILD__", strdup(__DATE__));
-    /* Current OS */
-    MemPush(MEMORY, "__PLATFORM__", strdup(__PLATFORM__));
-}
 
 /**
  * @brief Execute a function
@@ -67,7 +70,16 @@ char *RunFunction(AST tree)
 
     // Memory not found
     if (!get)
+    {
+        // Predefined functions
+        soare_function soare_fn = soare_getfunction(tree->value);
+
+        if (soare_fn.name)
+            return soare_fn.exec(tree->child);
+
+        // Function is not defined
         return LeaveException(UndefinedReference, tree->value, tree->file);
+    }
 
     // Memory is not a function
     if (!get->body)
@@ -82,7 +94,7 @@ char *RunFunction(AST tree)
 
     while (ptr)
     {
-        // Execute MEMORY (no more argument required)
+        // Execute statement (no more argument required)
         if (ptr->type == NODE_BODY)
         {
             FUNCTION = memf;
@@ -120,10 +132,10 @@ char *RunFunction(AST tree)
     return NULL;
 }
 
-static char broken = 0;
+static unsigned char broken = 0;
 
 /**
- * @brief Executes code from a tree
+ * @brief Interprets an AST node tree
  *
  * @param tree
  * @return char*
@@ -133,272 +145,180 @@ static char *Runtime(AST tree)
     if (!tree)
         return NULL;
 
-    AST root = tree;
-    AST tmp = NULL;
-    MEM get = NULL;
-
-    char *returned = NULL;
-    unsigned char error = 0;
+    MEM statement = MemLast(MEMORY);
+    statement->next = FUNCTION;
+    FUNCTION = NULL;
 
     broken = 0;
 
-    MemJoin(MEMORY, FUNCTION);
-    FUNCTION = NULL;
-
-    for (AST curr = root->child; curr && !ErrorLevel(); curr = curr->sibling)
+    for (AST curr = tree->child; curr && !ErrorLevel(); curr = curr->sibling)
     {
         switch (curr->type)
         {
-            /**
-             *
-             * BORIUM EXECUTABLE
-             *
-             */
-
-        case NODE_BORIUM_CLEAR:
-            SCREEN_CLEAR();
-            break;
-
-        case NODE_BORIUM_COLOR:
-            if ((returned = Eval(curr->child)))
-                SET_GLOBAL_COLOR(atoi(returned));
-            break;
-
-        case NODE_BORIUM_CURSOR:
-            if ((returned = Eval(curr->child)))
-                SET_CURSOR(atoi(returned));
-            break;
-
-        case NODE_BORIUM_EDITOR:
-            EDITOR();
-            break;
-
-        case NODE_BORIUM_GETC:
-            if ((get = MemGet(MEMORY, curr->value)))
-            {
-                if (!(returned = malloc(2)))
-                    return __SOARE_OUT_OF_MEMORY();
-                returned[0] = GETC();
-                returned[1] = 0;
-                MemSet(get, returned);
-                break;
-            }
-
-            return LeaveException(UndefinedReference, curr->value, curr->file);
-
-        case NODE_BORIUM_HELP:
-            PUTS(
-                //
-                "\n HELP \n"
-                " \t clear   -> Clear screen \n"
-                " \t color   -> Text color \n"
-                " \t cursor  -> Set cursor location \n"
-                " \t editor  -> Text editor \n"
-                " \t getc    -> Get char \n"
-                " \t help    -> Show commands \n"
-                " \t license -> Show license \n"
-                " \t pause   -> Interrupts the execution \n"
-                " \t setup   -> Change BORIUM settings \n"
-                " \t sleep   -> Pause for a while \n"
-                //
-            );
-            break;
-
-        case NODE_BORIUM_LICENSE:
-            PUTS(
-                //
-                "\n"
-                "BORIUM 2025 Antoine LANDRIEUX (MIT LICENSE)\n"
-                "<https://github.com/AntoineLandrieux/BORIUM>\n"
-                "SOARE 2024-2025 Antoine LANDRIEUX (MIT LICENSE)\n"
-                "<https://github.com/AntoineLandrieux/SOARE>\n"
-                "\n"
-                //
-            );
-            break;
-
-        case NODE_BORIUM_PAUSE:
-            PUTS("\nPress any key to continue...\n");
-            GETC();
-            break;
-
-        case NODE_BORIUM_SETUP:
-            SETUP();
-            break;
-
-        case NODE_BORIUM_SLEEP:
-            if ((returned = Eval(curr->child)))
-                SLEEP(atoi(returned) * 1000);
-            break;
-
-        /**
-         *
-         * DEFAULT SOARE EXECUTABLE
-         *
-         */
-
-        // Execute shell code
-        case NODE_SHELL:
-
-            returned = Eval(curr->child);
-            system(returned);
-            free(returned);
-            break;
-
-        // Store function into MEMORY
         case NODE_FUNCTION:
-
-            MemPushf(MEMORY, curr->value, curr);
+            // Store function definition in current scope
+            MemPushf(statement, curr->value, curr);
             break;
 
-        // User input
-        case NODE_INPUT:
-
-            if ((get = MemGet(MEMORY, curr->value)))
-            {
-                char input[__SOARE_MAX_INPUT__] = {0};
-                soare_input(input);
-                MemSet(get, strdup(input));
-                break;
-            }
-
-            return LeaveException(UndefinedReference, curr->value, curr->file);
-
-        // Call a function
         case NODE_CALL:
-
+            // Execute function call and free result
             free(RunFunction(curr));
             break;
 
-        // Push a new variable into MEMORY
-        case NODE_MEMNEW:
+        case NODE_BREAK:
+            // Break out of loop
+            broken = 1;
+            return ExitStatement(statement, NULL);
 
-            MemPush(MEMORY, curr->value, Eval(curr->child));
+        case NODE_RETURN:
+            // Return from function
+            return ExitStatement(statement, Eval(curr->child));
+
+        case NODE_RAISE:
+            // Raise an exception
+            return ExitStatementError(statement, RaiseException, curr->value, curr->file);
+
+        case NODE_IMPORT:
             break;
 
-        // Set a value to a variable
-        case NODE_MEMSET:
+        case NODE_MEMNEW:
+            // Create new variable in current scope
+            MemPush(statement, curr->value, Eval(curr->child));
+            break;
 
-            if (!(get = MemGet(MEMORY, curr->value)))
-                return LeaveException(UndefinedReference, curr->value, curr->file);
+        case NODE_MEMSET:
+        {
+            // Set variable value in current scope
+            MEM get = MemGet(MEMORY, curr->value);
+
+            if (!get)
+                return ExitStatementError(statement, UndefinedReference, curr->value, curr->file);
 
             if (get->body)
-                return LeaveException(VariableDefinedAsFunction, curr->value, curr->file);
+                return ExitStatementError(statement, VariableDefinedAsFunction, curr->value, curr->file);
 
             MemSet(get, Eval(curr->child));
-            break;
+        }
+        break;
 
-        // Condition MEMORY (if)
+        case NODE_CUSTOM_KEYWORD:
+        {
+            // Execute custom keyword handler
+            soare_keyword keyword = soare_getkeyword(curr->value);
+            if (keyword.name)
+                keyword.exec();
+        }
+        break;
+
         case NODE_CONDITION:
+        {
+            // Evaluate condition chain (if/or/else)
+            AST tmp = curr->child;
+            char *condition = Eval(tmp);
 
-            returned = Eval(curr->child);
-            tmp = curr->child;
-
-            while (returned)
+            while (condition)
             {
-                if (strcmp(returned, "0"))
+                if (strcmp(condition, "0"))
                 {
-                    free(returned);
+                    free(condition);
 
-                    if ((returned = Runtime(tmp->sibling)) || broken)
-                        return returned;
+                    char *value = Runtime(tmp->sibling);
 
+                    if (value || broken)
+                        return ExitStatement(statement, value);
                     break;
                 }
 
-                free(returned);
+                free(condition);
 
-                if (!(tmp = tmp->sibling->sibling))
+                if (!tmp->sibling)
                     break;
 
-                returned = Eval(tmp);
+                tmp = tmp->sibling->sibling;
+                condition = Eval(tmp);
             }
-            break;
+        }
+        break;
 
-        // Repetition MEMORY (while)
         case NODE_REPETITION:
+        {
+            // Loop while condition is true (!= "0")
+            char *condition = Eval(curr->child);
 
-            while ((returned = Eval(curr->child)))
+            while (condition && strcmp(condition, "0") && !ErrorLevel() && !broken)
             {
-                if (!strcmp(returned, "0") || ErrorLevel() || broken)
-                    break;
+                free(condition);
 
-                free(returned);
+                char *value = Runtime(curr->child->sibling);
 
-                if ((returned = Runtime(curr->child->sibling)))
-                    return returned;
+                if (value)
+                    return ExitStatement(statement, value);
+
+                condition = Eval(curr->child);
             }
 
-            free(returned);
-            break;
+            free(condition);
+        }
+        break;
 
-        // try/iferror MEMORY
         case NODE_TRY:
-
-            error = AsIgnoredException();
+        {
+            // try/iferror block
+            unsigned char previous = AsIgnoredException();
             IgnoreException(1);
-            returned = Runtime(curr->child);
-            IgnoreException(error);
+            char *value = Runtime(curr->child);
+            IgnoreException(previous);
 
             if (ErrorLevel() && !broken)
             {
-                free(returned);
+                free(value);
                 ClearException();
-                returned = Runtime(curr->child->sibling);
+                value = Runtime(curr->child->sibling);
             }
 
-            if (!returned && !broken)
-                break;
-
-            return returned;
-
-        // Print
-        case NODE_OUTPUT:
-
-            if ((returned = Eval(curr->child)))
-            {
-                soare_write(returned);
-                free(returned);
-            }
-            break;
-
-        // Break loop
-        case NODE_BREAK:
-
-            broken = 1;
-            return NULL;
-
-        // Return
-        case NODE_RETURN:
-
-            return Eval(curr->child);
-
-        // Leave new exception
-        case NODE_RAISE:
-
-            return LeaveException(RaiseException, curr->value, curr->file);
+            if (value || broken)
+                return ExitStatement(statement, value);
+        }
+        break;
 
         default:
-
             break;
         }
     }
 
-    // Quit
-    return NULL;
+    // Free scope and return
+    return ExitStatement(statement, NULL);
 }
 
 /**
- * @brief Execute the code from a string
+ * @brief Initialize SOARE interpreter
  *
- * @param rawcode
  */
-int Execute(char *__restrict__ file, char *__restrict__ rawcode)
+void soare_init(void)
 {
     if (!MEMORY)
-        // Set default vars..
-        InterpreterVar(file);
+        MEMORY = Mem();
+}
 
+/**
+ * @brief Kill SOARE interpreter
+ *
+ */
+void soare_kill(void)
+{
+    MemFree(MEMORY);
+    MEMORY = NULL;
+}
+
+/**
+ * @brief Execute SOARE code
+ *
+ * @param file
+ * @param rawcode
+ * @return char *
+ */
+char *Execute(char *__restrict__ file, char *__restrict__ rawcode)
+{
     // Clear interpreter exception
     ClearException();
 
@@ -409,26 +329,18 @@ int Execute(char *__restrict__ file, char *__restrict__ rawcode)
 
 #ifdef __SOARE_DEBUG
     // DEBUG: print tokens and trees
-    TreeLog(ast);
     TokensLog(tokens);
+    TreeLog(ast);
 #endif
 
     // Free tokens
     TokensFree(tokens);
 
     // Interpretation step 3: Runtime
-    free(Runtime(ast));
+    char *value = Runtime(ast);
 
     // Free AST
     TreeFree(ast);
-    // Free MEMORY
-    MemFree(MEMORY);
 
-    // Set MEMORY to NULL
-    MEMORY = NULL;
-
-    // Return error level
-    // 0: EXIT_SUCCESS
-    // 1: EXIT_FAILURE
-    return (int)ErrorLevel();
+    return value;
 }

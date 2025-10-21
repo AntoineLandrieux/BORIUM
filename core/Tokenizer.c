@@ -19,29 +19,6 @@
 
 #include <SOARE/SOARE.h>
 
-/* Environment */
-static char *Environment = "/";
-
-/**
- * @brief Set the Environment object
- *
- * @param path
- */
-void SetEnvironment(char *path)
-{
-    Environment = path;
-}
-
-/**
- * @brief Get the Environment object
- *
- * @return char*
- */
-char *GetEnvironment(void)
-{
-    return Environment;
-}
-
 /**
  * @brief Check if a character is a number
  *
@@ -51,7 +28,7 @@ char *GetEnvironment(void)
  */
 static inline unsigned char chrNum(const char character)
 {
-    return character >= '0' && character <= '9';
+    return (character >= '0' && character <= '9') || character == '.';
 }
 
 /**
@@ -60,9 +37,11 @@ static inline unsigned char chrNum(const char character)
  * @param character
  * @return unsigned char
  */
-static inline unsigned char chrAlpha(const char character)
+static inline unsigned char chrAlpha_(const char character)
 {
-    return (character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z');
+    return ((character >= 'a' && character <= 'z') ||
+            (character >= 'A' && character <= 'Z') ||
+            character == '_');
 }
 
 /**
@@ -71,9 +50,9 @@ static inline unsigned char chrAlpha(const char character)
  * @param character
  * @return unsigned char
  */
-static inline unsigned char chrAlnum(const char character)
+static inline unsigned char chrAlnum_(const char character)
 {
-    return chrAlpha(character) || chrNum(character);
+    return chrAlpha_(character) || chrNum(character);
 }
 
 /**
@@ -84,7 +63,8 @@ static inline unsigned char chrAlnum(const char character)
  */
 static inline unsigned char chrSpace(const char character)
 {
-    return character == ' ' || character == '\t' || character == '\r' || character == '\n';
+    return (character == ' ' || character == '\t' ||
+            character == '\r' || character == '\n');
 }
 
 /**
@@ -96,32 +76,6 @@ static inline unsigned char chrSpace(const char character)
 static inline unsigned char chrOperator(const char character)
 {
     return strchr("<,+-^*/%>", character) != NULL;
-}
-
-/**
- * @brief Display the tokens
- *
- * @param token
- */
-void TokensLog(Tokens *token)
-{
-    if (!token)
-        return;
-
-    /**
-     *
-     * Example:
-     *
-     * [TOKENS] [test.soare:00001:00001, 09, "write"]
-     * [TOKENS] [test.soare:00001:00007, 03, "Hello"]
-     * [TOKENS] [test.soare:00001:00014, 0B, ";"]
-     * [TOKENS] [test.soare:00000:00000, 00, "(null)"]
-     *
-     */
-
-    soare_write(token->value);
-    PUTC('\n');
-    TokensLog(token->next);
 }
 
 /**
@@ -155,7 +109,6 @@ static inline unsigned char strKeyword(char *string)
 {
     return (
         //
-        /* SOARE */
         !strcmp(KEYWORD_DO, string) ||
         !strcmp(KEYWORD_FN, string) ||
         !strcmp(KEYWORD_IF, string) ||
@@ -164,25 +117,14 @@ static inline unsigned char strKeyword(char *string)
         !strcmp(KEYWORD_TRY, string) ||
         !strcmp(KEYWORD_END, string) ||
         !strcmp(KEYWORD_ELSE, string) ||
-        !strcmp(KEYWORD_INPUT, string) ||
-        !strcmp(KEYWORD_WRITE, string) ||
         !strcmp(KEYWORD_WHILE, string) ||
         !strcmp(KEYWORD_RAISE, string) ||
         !strcmp(KEYWORD_BREAK, string) ||
         !strcmp(KEYWORD_RETURN, string) ||
         !strcmp(KEYWORD_IFERROR, string) ||
         !strcmp(KEYWORD_LOADIMPORT, string) ||
-        /* BORIUM */
-        !strcmp(KEYWORD_BORIUM_CLEAR, string) ||
-        !strcmp(KEYWORD_BORIUM_COLOR, string) ||
-        !strcmp(KEYWORD_BORIUM_CURSOR, string) ||
-        !strcmp(KEYWORD_BORIUM_EDITOR, string) ||
-        !strcmp(KEYWORD_BORIUM_GETC, string) ||
-        !strcmp(KEYWORD_BORIUM_HELP, string) ||
-        !strcmp(KEYWORD_BORIUM_LICENSE, string) ||
-        !strcmp(KEYWORD_BORIUM_PAUSE, string) ||
-        !strcmp(KEYWORD_BORIUM_SETUP, string) ||
-        !strcmp(KEYWORD_BORIUM_SLEEP, string)
+        // Custom keyword
+        soare_iskeyword(string)
         //
     );
 }
@@ -204,10 +146,10 @@ static inline token_type Symbol(char *string)
  * @param string
  * @return char*
  */
-static char *TranslateEscapeSequence(char *string)
+static void TranslateEscapeSequence(char *string)
 {
     if (!string)
-        return NULL;
+        return;
 
     char *chr = string;
     char *end = string + strlen(string);
@@ -277,14 +219,13 @@ static char *TranslateEscapeSequence(char *string)
             break;
 
         default:
-            return LeaveException(InvalidEscapeSequence, chr, EmptyDocument());
+            LeaveException(InvalidEscapeSequence, chr, EmptyDocument());
+            return;
         }
 
         chr++;
         memmove(chr, chr + len, end - chr + len);
     }
-
-    return string;
 }
 
 /**
@@ -331,18 +272,6 @@ Tokens *Token(char *__restrict__ filename, char *__restrict__ value, token_type 
 }
 
 /**
- * @brief Move on to the next token
- *
- * @param tokens
- * @param step
- */
-void TokenNext(Tokens **tokens, unsigned int step)
-{
-    for (unsigned int _ = 0; _ < step; _++)
-        *tokens = (*tokens)->next;
-}
-
-/**
  * @brief Check if a sequence of tokens corresponds with a sequence of token types
  *
  * @param tokens
@@ -375,13 +304,51 @@ unsigned char TokensFollowPattern(Tokens *tokens, unsigned int iteration, ...)
 void TokensFree(Tokens *token)
 {
     if (!token)
-        __asm__("nop");
-    // return;
+        return;
 
-    // TokensFree(token->next);
-    // free(token->value);
-    // free(token);
+    TokensFree(token->next);
+    free(token->value);
+    free(token);
 }
+
+#ifdef __SOARE_DEBUG
+
+/**
+ * @brief Display the tokens
+ *
+ * @param token
+ */
+void TokensLog(Tokens *token)
+{
+    if (!token)
+        return;
+
+    /**
+     *
+     * Example:
+     *
+     * [TOKENS] [test.soare:00001:00001, 09, "write"]
+     * [TOKENS] [test.soare:00001:00007, 03, "Hello"]
+     * [TOKENS] [test.soare:00001:00014, 0B, ";"]
+     * [TOKENS] [test.soare:00000:00000, 00, "(null)"]
+     *
+     */
+
+    soare_write(
+        //
+        __soare_stdout,
+        "[TOKENS] [%s:%.5lld:%.5lld, %.2X, \"%s\"]\n",
+        token->file.file,
+        token->file.ln,
+        token->file.col,
+        token->type,
+        token->value
+        //
+    );
+    TokensLog(token->next);
+}
+
+#endif
 
 /**
  * @brief Cut a string
@@ -435,12 +402,8 @@ Tokens *Tokenizer(char *__restrict__ filename, char *__restrict__ text)
     Tokens *curr = token;
 
     // Line/Column
-    unsigned long long ln = 0;
-    unsigned long long col = 0;
-    // Let:
-    // ln   = 1
-    // col  = 1
-    updateln(&ln, &col);
+    unsigned long long ln = 1;
+    unsigned long long col = 1;
 
     while (*text)
     {
@@ -499,75 +462,86 @@ Tokens *Tokenizer(char *__restrict__ filename, char *__restrict__ text)
         else if (*text == '=')
             type = TKN_ASSIGN;
 
-        // Shell
-        else if (*text == '$')
-            type = TKN_KEYWORD;
-
-        // Parentheses
-        else if (strchr("()", *text))
-            type = *text == '(' ? TKN_PARENL : TKN_PARENR;
+        // Parenthesis
+        else if (*text == '(')
+            type = TKN_PARENL;
+        else if (*text == ')')
+            type = TKN_PARENR;
 
         // Array
-        else if (strchr("[]", *text))
-            type = *text == '[' ? TKN_ARRAYL : TKN_ARRAYR;
+        else if (*text == '[')
+            type = TKN_ARRAYL;
+        else if (*text == ']')
+            type = TKN_ARRAYR;
 
-        // Semicolon or operator
-        else if (chrOperator(*text) || *text == ';')
-            type = *text == ';' ? TKN_SEMICOLON : TKN_OPERATOR;
+        // Semicolon
+        else if (*text == ';')
+            type = TKN_SEMICOLON;
+
+        // Operator
+        else if (chrOperator(*text))
+            type = TKN_OPERATOR;
 
         // Name
-        else if (chrAlpha(*text) || *text == '_')
-            while (chrAlnum((&*text)[offset]) || (&*text)[offset] == '_')
-                offset++;
+        else if (chrAlpha_(*text))
+        {
+            for (; chrAlnum_(text[offset]); offset++)
+                /* pass */;
+        }
 
         // Number (int, float)
         else if (chrNum(*text))
         {
-            unsigned char point = 0;
-            while (chrNum((&*text)[offset]) || ((&*text)[offset] == '.' && !point))
-                offset++;
-            type = TKN_NUMBER;
+            for (type = TKN_NUMBER; chrNum(text[offset]); offset++)
+                /* pass */;
         }
 
         // String `str`|'str'|"str"
         else if (strchr("\"'`", *text) != NULL)
         {
-            offset--;
             char ignore = 0;
             char quote = *text;
+
+            offset--;
             text++;
 
-            while ((&*text)[offset] && ((&*text)[offset] != quote || ignore))
+            while (text[offset] && (text[offset] != quote || ignore))
             {
-                ignore = !ignore && (&*text)[offset] == '\\';
+                ignore = !ignore && text[offset] == '\\';
                 offset++;
             }
 
             type = TKN_STRING;
-            offset++;
         }
 
         // Error
         else
         {
-            LeaveException(CharacterError, &*text, curr->file);
+            LeaveException(CharacterError, text, curr->file);
             continue;
         }
 
         // Add token
-        curr->value = type == TKN_STRING ? TranslateEscapeSequence(strcut(&*text, offset - 1)) : strcut(&*text, offset);
-        curr->type = type == TKN_EOF ? Symbol(curr->value) : type;
+        curr->value = strcut(text, offset);
+        if (type == TKN_STRING)
+            TranslateEscapeSequence(curr->value);
+
+        curr->type = !type ? Symbol(curr->value) : type;
         curr->next = Token(filename, NULL, TKN_EOF);
+
         curr = curr->next;
+
+        offset += type == TKN_STRING;
 
         // Update text pointer
         for (unsigned long long i = 0; i < offset; i++)
         {
-            col += 1;
+            col++;
             if (*text == '\n')
                 updateln(&ln, &col);
             text++;
         }
+
         col += type == TKN_STRING;
     }
 

@@ -1,8 +1,6 @@
 #include <DRIVER/video.h>
 #include <DRIVER/speaker.h>
 
-#include <STD/stdint.h>
-
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -14,20 +12,21 @@
  *
  * Antoine LANDRIEUX (MIT License) <video.c>
  * <https://github.com/AntoineLandrieux/BORIUM/>
+ * <https://github.com/AntoineLandrieux/x86driver/>
  *
  */
 
 // Tracks the current position in video memory for text output
-static uint16_t VGA_POINTER = 0;
+static unsigned short VGA_POINTER = 0;
 
 // Stores the current global text color
-static uint8_t GLOBAL_COLOR = 0x0F;
+static unsigned char GLOBAL_COLOR = 0x0F;
 
 // Indicates if the cursor should be updated after output
-static uint8_t MOVE_CURSOR = 0x1;
+static unsigned char MOVE_CURSOR = 0x1;
 
 // Controls text blinking (attribute mask)
-static uint8_t BLINK = 0x7F;
+static unsigned char BLINK = 0x7F;
 
 /**
  *
@@ -46,13 +45,13 @@ static void update_cursor_location(void)
     if (!MOVE_CURSOR)
         return;
 
-    uint16_t position = (uint16_t)(VGA_POINTER / 2);
+    unsigned short position = (unsigned short)(VGA_POINTER / 2);
 
     OUTB(0x3D4, 0x0F);
-    OUTB(0x3D5, (uint8_t)(position & 0xFF));
+    OUTB(0x3D5, (unsigned char)(position & 0xFF));
 
     OUTB(0x3D4, 0x0E);
-    OUTB(0x3D5, (uint8_t)((position >> 8) & 0xFF));
+    OUTB(0x3D5, (unsigned char)((position >> 8) & 0xFF));
 }
 
 /**
@@ -142,7 +141,7 @@ void SCREEN_CLEAR()
     VGA_POINTER = 0;
 
     // Fills text attributes with the global color
-    for (uint16_t i = 0; i < (SCREEN_TEXT * 2); i++)
+    for (unsigned short i = 0; i < (SCREEN_TEXT * 2); i++)
         VIDEO[i] = i % 2 ? GLOBAL_COLOR & BLINK : 0;
 
     // Resets the cursor

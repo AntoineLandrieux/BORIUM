@@ -1,8 +1,6 @@
 #include <DRIVER/keyboard.h>
 #include <DRIVER/video.h>
 
-#include <STD/stdint.h>
-
 /**
  *
  *  _____  _____ _____ _____ _   _ __  __
@@ -14,6 +12,7 @@
  *
  * Antoine LANDRIEUX (MIT License) <keyboard.c>
  * <https://github.com/AntoineLandrieux/BORIUM/>
+ * <https://github.com/AntoineLandrieux/x86driver/>
  *
  */
 
@@ -83,7 +82,7 @@ void KEYBOARD_INIT(KEYBOARD_LAYOUT keyboard)
  * @param shift_pressed
  * @return char
  */
-static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
+static inline char ascii_char(unsigned char keycode, unsigned char shift_pressed)
 {
     // Converts a keycode to its ASCII character,
     // considering the current layout and shift state.
@@ -96,9 +95,9 @@ static inline char ascii_char(uint8_t keycode, uint8_t shift_pressed)
  * @brief Returns true if the keycode is a shift key press.
  *
  * @param keycode
- * @return uint8_t
+ * @return unsigned char
  */
-static inline uint8_t is_shift_key(uint8_t keycode)
+static inline unsigned char is_shift_key(unsigned char keycode)
 {
     return keycode == 0x2A || keycode == 0x36;
 }
@@ -107,9 +106,9 @@ static inline uint8_t is_shift_key(uint8_t keycode)
  * @brief Returns true if the keycode is a shift key release.
  *
  * @param keycode
- * @return uint8_t
+ * @return unsigned char
  */
-static inline uint8_t is_shift_release(uint8_t keycode)
+static inline unsigned char is_shift_release(unsigned char keycode)
 {
     return keycode == 0xAA || keycode == 0xB6;
 }
@@ -121,14 +120,14 @@ static inline uint8_t is_shift_release(uint8_t keycode)
  */
 char GETC(void)
 {
-    uint8_t shifted = 0;
+    static unsigned char shifted = 0;
 
     char character = 0;
 
     while (!character)
     {
         // Waits for a key press,
-        uint8_t keycode = INB(KEYBOARD_PORT);
+        unsigned char keycode = INB(KEYBOARD_PORT);
 
         // handles shift state,
         if (is_shift_key(keycode))
@@ -166,7 +165,7 @@ void GETS(char *dest, long unsigned int size)
         return;
 
     // Length
-    uint64_t tlen = 0;
+    unsigned long tlen = 0;
 
     while (1)
     {

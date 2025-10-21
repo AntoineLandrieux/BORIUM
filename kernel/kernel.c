@@ -29,10 +29,6 @@ unsigned char running = 0;
 // Stores the current username (max 20 chars).
 char USERNAME[20] = {0};
 
-#define SCANCODE_ENTER 0x1C
-#define SCANCODE_UP 0x48
-#define SCANCODE_DOWN 0x50
-
 /**
  * @brief Executes a shell command using the SOARE interpreter.
  *
@@ -41,8 +37,9 @@ char USERNAME[20] = {0};
  */
 int system(char *command)
 {
+    free(Execute("system", command));
     // Returns errorlevel
-    return Execute("shell", command);
+    return ErrorLevel();
 }
 
 /**
@@ -87,13 +84,15 @@ void EDITOR(void)
     char file[__MAX_LINE_EDITOR__ * __SOARE_MAX_INPUT__] = {0};
     char user[__SOARE_MAX_INPUT__] = {0};
 
+    SCREEN_CLEAR();
+
     // Displays instructions
     PUTS(
         //
         "\n"
         " EDITOR MODE\n"
-        " \t TYPE '?exit' or '?cancel' to quit\n"
-        " \t TYPE '?run' or '?commit' to execute\n"
+        " \t TYPE '?exit' TO QUIT\n"
+        " \t TYPE '?run' TO EXECUTE\n"
         "\n"
         //
     );
@@ -110,16 +109,16 @@ void EDITOR(void)
         //  - ?exit, ?cancel to quit;
         //  - ?run, ?commit to execute.
 
-        if (strstr(user, "?run") || strstr(user, "?commit"))
+        if (strstr(user, "?run"))
             break;
 
-        if (strstr(user, "?exit") || strstr(user, "?cancel"))
+        if (strstr(user, "?exit"))
             return;
     }
 
     PUTC('\n');
     // Executes the collected text via the SOARE interpreter.
-    Execute("editor", file);
+    free(Execute("editor", file));
 }
 
 /**
@@ -128,6 +127,9 @@ void EDITOR(void)
  */
 static void KEYBOARD_SELECTOR(void)
 {
+#define SCANCODE_ENTER 0x1C
+#define SCANCODE_UP 0x48
+#define SCANCODE_DOWN 0x50
     CPUTS("\n KEYBOARD SELECT   \n", 0x1F);
 
     TEXT_BLINKING(1);
@@ -224,52 +226,14 @@ static inline uint8_t CONFIRM(void)
 }
 
 /**
- * @brief Shell for the interpreter
- *
- */
-static void shell()
-{
-
-    // Displays welcome and license information.
-    PUTS(
-        //
-        "\n"
-        "The programs included with the BORIUM system are free software;\n"
-        "the exact distribution terms for each program are described in the\n"
-        "<https://github.com/AntoineLandrieux/BORIUM>\n"
-        "Type 'license', 'help' or see SOARE documentation\n"
-        //
-    );
-
-    // While running, prompts the user for input, displays the username,
-    // and executes commands using the SOARE interpreter.
-    while (running)
-    {
-        char input[80] = {0};
-
-        unsigned char color = (GET_GLOBAL_COLOR() >> 4) | (GET_GLOBAL_COLOR() << 4);
-
-        CPUTS("\n ", color);
-        CPUTS(USERNAME, color);
-        CPUTS(" >>> ", color);
-        PUTC(' ');
-
-        GETS(input, sizeof(input));
-
-        system(input);
-    }
-}
-
-/**
  * @brief Startup sound
  *
  */
 static inline void STARTUP_SOUND(void)
 {
-    PLAY_NOTE(NOTE_C, 2, 500);
-    PLAY_NOTE(NOTE_D, 2, 500);
     PLAY_NOTE(NOTE_E, 2, 500);
-    PLAY_NOTE(NOTE_D, 2, 500);
+    PLAY_NOTE(NOTE_E, 3, 500);
+    PLAY_NOTE(NOTE_E, 4, 500);
 }
 
 /**
@@ -282,29 +246,34 @@ static inline void STARTUP_SCREEN(void)
     SET_GLOBAL_COLOR(0xF0);
     SCREEN_CLEAR();
 
-    SET_CURSOR(SCREEN_TEXT_WIDTH * 2);
-
     PUTS(
         //
-        "       _____  _____ _____ _____ _   _ __  __ \n"
-        "      | ___ \\|  _  | ___ \\_   _| | | |  \\/  |\n"
-        "      | |_/ /| | | | |_/ / | | | | | | .  . |\n"
-        "      | ___ \\| | | |    /  | | | | | | |\\/| |\n"
-        "      | |_/ /\\ \\_/ / |\\ \\ _| |_| |_| | |  | |\n"
-        "      \\____/  \\___/\\_| \\_|\\___/ \\___/\\_|  |_/\n"
-        "       BORIUM KERNEL (MIT LICENSE)"
+        "\n\n"
+        "\n  BB##"
+        "\n  BB####BBB                               II"
+        "\n  BB####BBB                     RRRRRR    II"
+        "\n  BB   ##BB       OOO          RRRRRRR#"
+        "\n  BB####BBB    OOOOOO##        RR######                        MMMMMMMMMM"
+        "\n BBB####BBB    OOOO #####      RR##                UU    ##   MMMMMMMMMMMMM"
+        "\n BBB########  OOO##   #####    RR##      II#      UUU#   ##   MMM#MMMM#MMMMM"
+        "\n BB#####  ### OO##      ###OO  RR##      II#      UU##   ##   MMM# MM####MMM"
+        "\n BB##     ### ##         ##OO  RRR#      II#      UU##   ##   MMM# MM  ##MM"
+        "\n BB##      ## ##          #OO  RRR##     II#      UU##   ##   MMM# ##  ##MM"
+        "\n BBB#      ## ###        ##OO   RR##     II#      UU##  ###   MMM# ##  ##M"
+        "\n BBB#    #### ###      ###OOO   RR##    III##    #UUU####UUU  MMM#     ##M"
+        "\n BBB########   ##########OOOO   RR##    III##### #UUUUUUUUUU  MM##     ##M"
+        "\n BBB######      ###OOOOOOOOO            IIIIIIII   UUUUUUUU     ##     ##M"
+        "\n BB#               OOOOOOO               IIIIIII      UUUU             ##M"
+        "\n                                                                         M"
+        "\n\n"
         //
     );
 
     // Sets running to true
     running = 1;
 
-    SET_CURSOR(SCREEN_TEXT_WIDTH * 24);
+    SET_CURSOR(1920);
     CPUTS("[-] Booting.....", 0x0F);
-    STARTUP_SOUND();
-    SET_CURSOR(SCREEN_TEXT_WIDTH * 24);
-    CPUTS("[-] Load setup.....", 0x0F);
-    SLEEP(500);
 }
 
 /**
@@ -332,6 +301,51 @@ void SETUP(void)
 }
 
 /**
+ * @brief Shell for the interpreter
+ *
+ */
+static void shell()
+{
+
+    soare_kill();
+    soare_init();
+
+    // Displays welcome and license information.
+    PUTS(
+        //
+        "\n"
+        "The programs included with the BORIUM system are free software;\n"
+        "the exact distribution terms for each program are described in the\n"
+        "<https://github.com/AntoineLandrieux/BORIUM>\n"
+        "Type 'license', 'help' or see SOARE documentation\n"
+        //
+    );
+
+    // While running, prompts the user for input, displays the username,
+    // and executes commands using the SOARE interpreter.
+    while (running)
+    {
+        char input[__SOARE_MAX_INPUT__] = {0};
+
+        unsigned char color = (GET_GLOBAL_COLOR() >> 4) | (GET_GLOBAL_COLOR() << 4);
+
+        CPUTS("\n ", color);
+        CPUTS(USERNAME, color);
+        CPUTS(" >>> ", color);
+        PUTC(' ');
+
+        GETS(input, sizeof(input));
+
+        char *result = Execute("shell", input);
+        if (result)
+            CPUTS(result, 0xA);
+        free(result);
+    }
+
+    soare_kill();
+}
+
+/**
  * @brief Start the kernel
  *
  */
@@ -339,8 +353,11 @@ void start(void)
 {
     // Statup screen
     STARTUP_SCREEN();
-    // Runs setup,
+    STARTUP_SOUND();
+    // Runs setup
     SETUP();
-    // And enters the shell loop.
+    // Initializes SOARE kernel functions
+    INIT_SOARE_KERNEL();
+    // And enters the shell loop
     shell();
 }

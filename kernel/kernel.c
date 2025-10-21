@@ -122,7 +122,7 @@ void EDITOR(void)
 }
 
 /**
- * @brief Allows the user to select the keyboard layout (QUERTY/AZERTY) using arrow keys and Enter.
+ * @brief Allows the user to select the keyboard layout (QWERTY/AZERTY) using arrow keys and Enter.
  *
  */
 static void KEYBOARD_SELECTOR(void)
@@ -136,7 +136,7 @@ static void KEYBOARD_SELECTOR(void)
     CPUTS(" USE ARROW KEY AND PRESS ENTER TO SELECT \n\n", 0xF4);
     TEXT_BLINKING(0);
 
-    uint8_t selected = QUERTY;
+    uint8_t selected = QWERTY;
     UPDATE_AND_MOVE_CURSOR(0);
     uint16_t cursor = GET_CURSOR();
 
@@ -146,14 +146,14 @@ static void KEYBOARD_SELECTOR(void)
     while (1)
     {
         PUTS("      \t 1) ");
-        CPUTS(" QUERTY \n", selected == QUERTY ? 0x9F : 0xF1);
+        CPUTS(" QWERTY \n", selected == QWERTY ? 0x9F : 0xF1);
         PUTS("      \t 2) ");
         CPUTS(" AZERTY \n", selected == AZERTY ? 0x9F : 0xF1);
 
         switch (INB(KEYBOARD_PORT))
         {
         case SCANCODE_UP:
-            selected = QUERTY;
+            selected = QWERTY;
             break;
 
         case SCANCODE_DOWN:

@@ -9,7 +9,7 @@ NASM       := nasm
 GRUB_MKRES := grub-mkrescue
 QEMU       := qemu-system-x86_64
 RM         := rm -rf
-MKDIR_P    := mkdir -p
+MKDIR      := mkdir
 
 BIN     := bin
 STD     := STD
@@ -21,9 +21,10 @@ INCLUDE := include
 
 LINKER_SCRIPT := script/linker.ld
 
-CFLAGS := -Wall -Wextra -Wno-unused-parameter -Wno-implicit-fallthrough
+CFLAGS := -Wall -Wextra
+CFLAGS += -Wno-unused-parameter -Wno-implicit-fallthrough
 CFLAGS += -ffreestanding -m32 -fno-pie -fno-stack-protector
-CFLAGS += -MMD -MP -I$(INCLUDE)
+CFLAGS += -I $(INCLUDE)
 
 ASFLAGS := -f elf
 LDFLAGS := -m elf_i386 -T $(LINKER_SCRIPT)
@@ -40,6 +41,9 @@ default: clean all
 
 all: $(LINK_ELF) $(OUT)
 
+$(BIN):
+	$(MKDIR) bin
+
 $(ASM_OBJS): $(BOOT)/entry.asm | $(BIN)
 	$(NASM) $(ASFLAGS) $< -o $@
 
@@ -52,9 +56,6 @@ $(BIN)/%.o: $(CORE)/%.c | $(BIN)
 $(BIN)/%.o: $(STD)/%.c | $(BIN)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN):
-	$(MKDIR_P) $(BIN)
-
 $(LINK_ELF): $(ALL_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $^
 
@@ -66,16 +67,14 @@ run:
 
 clean:
 	$(RM) $(BIN)
-	$(RM) iso/boot/borium.elf
+	$(RM) $(LINK_ELF)
 
 distclean: clean
 	$(RM) $(OUT)
 
--include $(C_OBJS:.o=.d)
-
 help:
-	@echo "Usage:"
-	@echo "  make         -> build everything (iso)"
-	@echo "  make run     -> build and run in qemu"
-	@echo "  make clean   -> remove build objects"
-	@echo "  make distclean -> remove build + iso"
+	@echo "Usage :"
+	@echo " make           -> build everything (iso)"
+	@echo " make run       -> run in qemu"
+	@echo " make clean     -> remove build objects"
+	@echo " make distclean -> remove build + iso"

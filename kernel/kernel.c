@@ -202,7 +202,7 @@ static inline void USER_SELECTOR(void)
  */
 static inline uint8_t CONFIRM(void)
 {
-    CPUTS("\n CONFIRM          \n\n", 0x1F);
+    CPUTS("\n CONFIRM           \n\n", 0x1F);
     CPUTS(" All Ok ? [Y/N] ", 0xF0);
 
     while (1)
